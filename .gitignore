@@ -1,0 +1,18 @@
+# Binaries and build outputs
+backend/tmp/
+backend/main
+backend/main.exe
+backend/uploads/
+frontend/dist/
+
+# Dependencies
+frontend/node_modules/
+
+# Environment and secrets
+backend/.env
+
+# IDE / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
