@@ -1,0 +1,296 @@
+<template>
+  <div class="form-container">
+    <div class="header-nav">
+      <button class="btn btn-secondary btn-sm" @click="$router.back()">&larr; Kembali</button>
+      <h1 class="page-title">{{ isEdit ? 'Edit Permohonan Dokumen' : 'Buat Permohonan Dokumen Baru' }}</h1>
+    </div>
+
+    <div class="glass-card form-card">
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group">
+          <label class="form-label">Judul Permohonan Dokumen *</label>
+          <input 
+            v-model="form.title" 
+            type="text" 
+            class="form-input" 
+            placeholder="Contoh: Permohonan Dokumen Kelayakan Lingkungan PT XYZ" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nama Perusahaan / Pemohon *</label>
+          <input 
+            v-model="form.company_name" 
+            type="text" 
+            class="form-input" 
+            placeholder="Nama Resmi PT / CV / Instansi" 
+            required 
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Deskripsi Permohonan & Detail Kelayakan</label>
+          <textarea 
+            v-model="form.description" 
+            class="form-textarea" 
+            placeholder="Jelaskan ruang lingkup, lokasi, dan latar belakang pengajuan permohonan dokumen kelayakan..."
+            rows="5"
+          ></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" @click="$router.back()">Batal</button>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">
+            <span>{{ submitting ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Simpan Sebagai Draft') }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Document Attachment Section (Available when project exists) -->
+    <div v-if="isEdit && project" class="glass-card upload-card">
+      <h3 class="section-title">Dokumen Lampiran (PDF / Gambar / DOCX)</h3>
+      <p class="section-subtitle">Unggah dokumen kelayakan pendukung (Maksimal 10MB per file).</p>
+
+      <!-- Upload Form -->
+      <div class="file-uploader">
+        <input 
+          type="file" 
+          ref="fileInput" 
+          class="file-input-hidden" 
+          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
+          @change="handleFileUpload" 
+        />
+        <div class="upload-dropzone" @click="$refs.fileInput.click()">
+          <span class="upload-icon">📁</span>
+          <span class="upload-text">Klik di sini untuk memilih dan mengunggah dokumen</span>
+          <small class="upload-hint">Format yang diizinkan: PDF, JPG, PNG, DOC, DOCX</small>
+        </div>
+      </div>
+
+      <!-- File List -->
+      <div v-if="documents.length > 0" class="file-list">
+        <div v-for="doc in documents" :key="doc.id" class="file-item">
+          <div class="file-info">
+            <span class="file-name">{{ doc.file_name }}</span>
+            <span class="file-size">{{ formatSize(doc.file_size) }}</span>
+          </div>
+          <div class="file-actions">
+            <a :href="getDownloadUrl(doc.id)" target="_blank" class="btn btn-secondary btn-sm">Download</a>
+            <button class="btn btn-danger btn-sm" @click="deleteDoc(doc.id)">Hapus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import apiClient from '../services/api'
+
+const route = useRoute()
+const router = useRouter()
+
+const isEdit = computed(() => !!route.params.id)
+const project = ref(null)
+const documents = ref([])
+const submitting = ref(false)
+const fileInput = ref(null)
+
+const form = reactive({
+  title: '',
+  company_name: '',
+  description: ''
+})
+
+const fetchProject = async () => {
+  if (!isEdit.value) return
+  try {
+    const res = await apiClient.get(`/projects/${route.params.id}`)
+    if (res.data?.data) {
+      project.value = res.data.data
+      form.title = project.value.title
+      form.company_name = project.value.company_name
+      form.description = project.value.description
+      documents.value = project.value.documents || []
+    }
+  } catch (err) {
+    alert('Gagal memuat data project: ' + (err.response?.data?.error || err.message))
+    router.push('/projects')
+  }
+}
+
+const handleSubmit = async () => {
+  submitting.value = true
+  try {
+    if (isEdit.value) {
+      await apiClient.put(`/projects/${route.params.id}`, form)
+      alert('Project berhasil diperbarui!')
+    } else {
+      const res = await apiClient.post('/projects', form)
+      alert('Draft project berhasil dibuat! Anda dapat mengunggah dokumen pendukung pada halaman berikutnya.')
+      router.push(`/projects/${res.data.data.id}/edit`)
+    }
+  } catch (err) {
+    alert('Gagal menyimpan: ' + (err.response?.data?.error || err.message))
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    await apiClient.post(`/projects/${route.params.id}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    fetchProject()
+    fileInput.value.value = ''
+  } catch (err) {
+    alert('Gagal upload dokumen: ' + (err.response?.data?.error || err.message))
+  }
+}
+
+const deleteDoc = async (docId) => {
+  if (confirm('Hapus dokumen ini?')) {
+    try {
+      await apiClient.delete(`/projects/${route.params.id}/documents/${docId}`)
+      fetchProject()
+    } catch (err) {
+      alert('Gagal menghapus dokumen: ' + (err.response?.data?.error || err.message))
+    }
+  }
+}
+
+const getDownloadUrl = (docId) => {
+  return `${apiClient.defaults.baseURL}/documents/${docId}/download`
+}
+
+const formatSize = (bytes) => {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+onMounted(() => {
+  fetchProject()
+})
+</script>
+
+<style scoped>
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.form-card, .upload-card {
+  padding: 1.75rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.section-subtitle {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.file-input-hidden { display: none; }
+
+.upload-dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg-input);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.upload-icon { font-size: 2rem; }
+.upload-text { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+.upload-hint { color: var(--text-subtle); font-size: 0.78rem; }
+
+.file-list {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+</style>
