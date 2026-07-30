@@ -1,0 +1,68 @@
+image: docker:20.10.16
+
+services:
+  - docker:20.10.16-dind
+
+stages:
+  - lint
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+# ─── 1. LINT STAGE ──────────────────────────────────────────
+backend-lint:
+  stage: lint
+  image: golang:1.21-alpine
+  script:
+    - cd backend
+    - go vet ./...
+
+frontend-lint:
+  stage: lint
+  image: node:18-alpine
+  script:
+    - cd frontend
+    - npm install
+
+# ─── 2. BUILD STAGE ─────────────────────────────────────────
+build-backend:
+  stage: build
+  image: golang:1.21-alpine
+  script:
+    - cd backend
+    - go build -o tmp/main ./cmd/api/main.go
+  artifacts:
+    paths:
+      - backend/tmp/main
+
+build-frontend:
+  stage: build
+  image: node:18-alpine
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist
+
+# ─── 3. TEST STAGE ──────────────────────────────────────────
+unit-tests:
+  stage: test
+  image: golang:1.21-alpine
+  script:
+    - cd backend
+    - go test -v ./...
+
+# ─── 4. DEPLOY STAGE ────────────────────────────────────────
+deploy-staging:
+  stage: deploy
+  script:
+    - echo "Deploying fullstack application to staging environment..."
+    - docker-compose build
+  only:
+    - main
