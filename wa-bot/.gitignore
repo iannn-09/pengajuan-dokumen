@@ -1,0 +1,9 @@
+.env
+session
+logs
+wa-bot
+wa-bot-session.db
+wa-bot-store.db
+tmp/
+.air.toml
+.DS_Store
