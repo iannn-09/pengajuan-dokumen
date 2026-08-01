@@ -13,13 +13,29 @@
           <h2 class="page-heading">{{ currentPageTitle }}</h2>
         </div>
         <div class="topbar-right">
-          <div class="status-dot" :class="{ online: isOnline }"></div>
+          <button 
+            class="bell-btn" 
+            @click="isNotificationOpen = true" 
+            title="Buka Notifikasi & Aktivitas Terbaru"
+          >
+            <span class="bell-emoji">🔔</span>
+            <span class="bell-badge"></span>
+          </button>
+
+          <div class="status-dot" :class="{ online: isOnline }" title="Status Koneksi System Backend"></div>
           <span class="role-badge">{{ getRoleBadgeText(auth.userRole) }}</span>
         </div>
       </header>
+
       <main class="main-content">
         <router-view />
       </main>
+
+      <!-- Right Notification Drawer Sheet -->
+      <NotificationDrawer 
+        :is-open="isNotificationOpen" 
+        @close="isNotificationOpen = false" 
+      />
     </div>
   </div>
 
@@ -34,14 +50,16 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import Sidebar from './components/Sidebar.vue'
+import NotificationDrawer from './components/NotificationDrawer.vue'
 import apiClient from './services/api'
 
 const auth = useAuthStore()
 const route = useRoute()
 const isOnline = ref(false)
+const isNotificationOpen = ref(false)
 
 const pageNameMap = {
-  Dashboard: 'Dashboard',
+  Dashboard: 'Dashboard Overview',
   MasterDocumentType: 'Master Jenis Dokumen Kelayakan',
   UserManagement: 'Manajemen User & Penilai',
   ProjectList: 'Daftar Project Permohonan',
@@ -50,7 +68,8 @@ const pageNameMap = {
   ProjectDetail: 'Detail Pengajuan',
   ReviewList: 'Penilaian Dokumen',
   ReviewDetail: 'Detail Penilaian',
-  ReviewHistory: 'Riwayat Penilaian',
+  ReviewHistory: 'Riwayat Penilaian & Log Audit',
+  ProfileView: 'Profil Saya & Pengaturan Akun',
   Login: 'Login',
   Register: 'Register',
   LandingPage: 'Landing Page'
@@ -124,7 +143,42 @@ onMounted(() => {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+}
+
+.bell-btn {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bell-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
+.bell-emoji {
+  font-size: 1.1rem;
+}
+
+.bell-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 6px #f43f5e;
 }
 
 .status-dot {
