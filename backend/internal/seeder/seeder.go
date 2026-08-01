@@ -39,11 +39,23 @@ func SeedDatabase(totalPemohon, totalPenilai, totalProjects int) {
 }
 
 func seedUsers(totalPemohon, totalPenilai int) {
-	log.Printf("Seeding %d Pemohon and %d Penilai users...", totalPemohon, totalPenilai)
+	log.Printf("Seeding Admin, %d Pemohon, and %d Penilai users...", totalPemohon, totalPenilai)
 
 	defaultPassword, _ := middleware.HashPassword("password123")
 
-	// Batch insert Pemohon
+	// 1. Seed Admin user
+	adminUser := models.User{
+		Name:     "Super Administrator",
+		Email:    "admin@kelayakan.id",
+		Password: defaultPassword,
+		Role:     models.RoleAdmin,
+		Phone:    "081100001111",
+		Company:  "Instansi Pusat Pengelolaan Kelayakan",
+	}
+	config.DB.Create(&adminUser)
+	log.Println("Seeded Admin user (admin@kelayakan.id)")
+
+	// 2. Batch insert Pemohon
 	batchSize := 250
 	var pemohonList []models.User
 	for i := 1; i <= totalPemohon; i++ {
@@ -66,7 +78,7 @@ func seedUsers(totalPemohon, totalPenilai int) {
 		}
 	}
 
-	// Batch insert Penilai
+	// 3. Batch insert Penilai
 	var penilaiList []models.User
 	for i := 1; i <= totalPenilai; i++ {
 		u := models.User{

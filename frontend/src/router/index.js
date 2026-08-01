@@ -26,22 +26,28 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/users',
+    name: 'UserManagement',
+    component: () => import('../views/UserManagement.vue'),
+    meta: { requiresAuth: true, allowedRoles: ['admin', 'penilai'] }
+  },
+  {
     path: '/projects',
     name: 'ProjectList',
     component: () => import('../views/ProjectList.vue'),
-    meta: { requiresAuth: true, role: 'pemohon' }
+    meta: { requiresAuth: true, allowedRoles: ['pemohon', 'admin'] }
   },
   {
     path: '/projects/create',
     name: 'ProjectCreate',
     component: () => import('../views/ProjectForm.vue'),
-    meta: { requiresAuth: true, role: 'pemohon' }
+    meta: { requiresAuth: true, allowedRoles: ['pemohon', 'admin'] }
   },
   {
     path: '/projects/:id/edit',
     name: 'ProjectEdit',
     component: () => import('../views/ProjectForm.vue'),
-    meta: { requiresAuth: true, role: 'pemohon' }
+    meta: { requiresAuth: true, allowedRoles: ['pemohon', 'admin'] }
   },
   {
     path: '/projects/:id',
@@ -53,19 +59,19 @@ const routes = [
     path: '/reviews',
     name: 'ReviewList',
     component: () => import('../views/ReviewList.vue'),
-    meta: { requiresAuth: true, role: 'penilai' }
+    meta: { requiresAuth: true, allowedRoles: ['penilai', 'admin'] }
   },
   {
     path: '/reviews/:id',
     name: 'ReviewDetail',
     component: () => import('../views/ReviewDetail.vue'),
-    meta: { requiresAuth: true, role: 'penilai' }
+    meta: { requiresAuth: true, allowedRoles: ['penilai', 'admin'] }
   },
   {
     path: '/reviews/history',
     name: 'ReviewHistory',
     component: () => import('../views/ReviewHistory.vue'),
-    meta: { requiresAuth: true, role: 'penilai' }
+    meta: { requiresAuth: true, allowedRoles: ['penilai', 'admin'] }
   },
 ]
 
@@ -89,7 +95,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // Role-based guard
-  if (to.meta.role && auth.userRole !== to.meta.role) {
+  if (to.meta.allowedRoles && !to.meta.allowedRoles.includes(auth.userRole)) {
     return next('/dashboard')
   }
 

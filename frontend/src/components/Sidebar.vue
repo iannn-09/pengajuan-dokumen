@@ -16,11 +16,29 @@
     </div>
 
     <nav class="sidebar-nav">
-      <router-link to="/" class="nav-item" active-class="active" :title="isCollapsed ? 'Dashboard' : ''">
+      <router-link to="/dashboard" class="nav-item" active-class="active" :title="isCollapsed ? 'Dashboard' : ''">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         <span v-if="!isCollapsed">Dashboard</span>
       </router-link>
 
+      <!-- Admin Section -->
+      <template v-if="auth.isAdmin">
+        <div class="nav-label" v-if="!isCollapsed">ADMINISTRATOR</div>
+        <router-link to="/users" class="nav-item" active-class="active" :title="isCollapsed ? 'Kelola User & Penilai' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span v-if="!isCollapsed">Kelola User & Penilai</span>
+        </router-link>
+        <router-link to="/reviews" class="nav-item" active-class="active" :title="isCollapsed ? 'Penilaian Project' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span v-if="!isCollapsed">Penilaian Project</span>
+        </router-link>
+        <router-link to="/reviews/history" class="nav-item" active-class="active" :title="isCollapsed ? 'Riwayat Audit' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span v-if="!isCollapsed">Riwayat Audit</span>
+        </router-link>
+      </template>
+
+      <!-- Pemohon Section -->
       <template v-if="auth.isPemohon">
         <div class="nav-label" v-if="!isCollapsed">PEMOHON</div>
         <router-link to="/projects" class="nav-item" active-class="active" :title="isCollapsed ? 'Daftar Project' : ''">
@@ -33,6 +51,7 @@
         </router-link>
       </template>
 
+      <!-- Penilai Section -->
       <template v-if="auth.isPenilai">
         <div class="nav-label" v-if="!isCollapsed">PENILAI</div>
         <router-link to="/reviews" class="nav-item" active-class="active" :title="isCollapsed ? 'Penilaian' : ''">
@@ -51,7 +70,7 @@
         <div class="user-avatar">{{ auth.userName?.charAt(0)?.toUpperCase() }}</div>
         <div class="user-details">
           <span class="user-name">{{ auth.userName }}</span>
-          <span class="user-role">{{ auth.userRole === 'pemohon' ? 'Pemohon' : 'Penilai' }}</span>
+          <span class="user-role">{{ getRoleLabel(auth.userRole) }}</span>
         </div>
       </div>
       <button class="nav-item logout-btn" @click="auth.logout()" :title="isCollapsed ? 'Logout' : ''">
@@ -68,6 +87,12 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 const isCollapsed = ref(false)
+
+const getRoleLabel = (role) => {
+  if (role === 'admin') return 'Administrator'
+  if (role === 'penilai') return 'Penilai / Verifikator'
+  return 'Pemohon Dokumen'
+}
 </script>
 
 <style scoped>
@@ -144,7 +169,7 @@ const isCollapsed = ref(false)
   color: white; font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
 }
 .user-name { font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; }
-.user-role { font-size: 0.72rem; color: var(--text-muted); text-transform: capitalize; }
+.user-role { font-size: 0.72rem; color: var(--text-muted); }
 
 .logout-btn { color: #fb7185; }
 .logout-btn:hover { background: rgba(244,63,94,0.1); }

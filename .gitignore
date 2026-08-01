@@ -10,6 +10,7 @@ frontend/node_modules/
 
 # Environment and secrets
 backend/.env
+wa-bot/
 
 # IDE / OS files
 .DS_Store

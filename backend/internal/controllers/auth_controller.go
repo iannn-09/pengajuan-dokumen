@@ -49,7 +49,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 		Name:     dto.Name,
 		Email:    dto.Email,
 		Password: hashedPassword,
-		Role:     dto.Role,
+		Role:     models.RolePemohon,
 		Phone:    dto.Phone,
 		Company:  dto.Company,
 	}

@@ -1,8 +1,8 @@
 <template>
   <div class="auth-card glass-card">
     <div class="auth-header">
-      <h2 class="auth-title">Daftar Akun Baru</h2>
-      <p class="auth-subtitle">Pilih role dan lengkapi data pendaftaran Anda</p>
+      <h2 class="auth-title">Daftar Akun Pemohon</h2>
+      <p class="auth-subtitle">Lengkapi formulir di bawah ini untuk membuat akun pemohon dokumen baru</p>
     </div>
 
     <form @submit.prevent="handleRegister" class="auth-form">
@@ -11,37 +11,23 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Daftar Sebagai *</label>
-        <div class="role-selector">
-          <label class="role-chip" :class="{ active: form.role === 'pemohon' }">
-            <input type="radio" v-model="form.role" value="pemohon" />
-            <span>Pemohon Dokumen</span>
-          </label>
-          <label class="role-chip" :class="{ active: form.role === 'penilai' }">
-            <input type="radio" v-model="form.role" value="penilai" />
-            <span>Penilai / Verifikator</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Nama Lengkap *</label>
+        <label class="form-label">Nama Lengkap / Penanggung Jawab *</label>
         <input 
           v-model="form.name" 
           type="text" 
           class="form-input" 
-          placeholder="Nama Anda atau Perusahaan" 
+          placeholder="Nama Anda" 
           required 
         />
       </div>
 
       <div class="form-group">
-        <label class="form-label">Email *</label>
+        <label class="form-label">Email Pemohon *</label>
         <input 
           v-model="form.email" 
           type="email" 
           class="form-input" 
-          placeholder="nama@email.com" 
+          placeholder="nama@perusahaan.com" 
           required 
         />
       </div>
@@ -81,7 +67,7 @@
 
       <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
         <span v-if="loading">Memproses Pendaftaran...</span>
-        <span v-else>Daftar Sekarang</span>
+        <span v-else>Daftar Akun Pemohon</span>
       </button>
     </form>
 
@@ -107,7 +93,6 @@ const form = reactive({
   name: '',
   email: '',
   password: '',
-  role: 'pemohon',
   phone: '',
   company: ''
 })
@@ -117,7 +102,7 @@ const handleRegister = async () => {
   errorMessage.value = ''
   try {
     await auth.register(form)
-    router.push('/')
+    router.push('/dashboard')
   } catch (err) {
     errorMessage.value = err.response?.data?.error || 'Gagal mendaftar. Pastikan email belum terdaftar.'
   } finally {
@@ -148,35 +133,6 @@ const handleRegister = async () => {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-top: 0.3rem;
-}
-
-.role-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.role-chip {
-  padding: 0.75rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: var(--bg-input);
-  color: var(--text-muted);
-  cursor: pointer;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.role-chip input {
-  display: none;
-}
-
-.role-chip.active {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: var(--accent-primary);
-  color: #818cf8;
 }
 
 .form-row {
@@ -219,7 +175,7 @@ const handleRegister = async () => {
 }
 
 @media (max-width: 640px) {
-  .form-row, .role-selector {
+  .form-row {
     grid-template-columns: 1fr;
   }
 }

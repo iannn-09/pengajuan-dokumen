@@ -14,7 +14,7 @@
         </div>
         <div class="topbar-right">
           <div class="status-dot" :class="{ online: isOnline }"></div>
-          <span class="role-badge">{{ auth.userRole === 'pemohon' ? 'Pemohon' : 'Penilai' }}</span>
+          <span class="role-badge">{{ getRoleBadgeText(auth.userRole) }}</span>
         </div>
       </header>
       <main class="main-content">
@@ -42,6 +42,7 @@ const isOnline = ref(false)
 
 const pageNameMap = {
   Dashboard: 'Dashboard',
+  UserManagement: 'Manajemen User & Penilai',
   ProjectList: 'Daftar Project Permohonan',
   ProjectCreate: 'Buat Pengajuan Baru',
   ProjectEdit: 'Edit Pengajuan',
@@ -55,6 +56,12 @@ const pageNameMap = {
 }
 
 const currentPageTitle = computed(() => pageNameMap[route.name] || 'Halaman')
+
+const getRoleBadgeText = (role) => {
+  if (role === 'admin') return 'Admin'
+  if (role === 'penilai') return 'Penilai'
+  return 'Pemohon'
+}
 
 const checkHealth = async () => {
   try {

@@ -65,7 +65,7 @@ func SetupRouter() *gin.Engine {
 			// ─── Projects (Pemohon) ────────────────────────────────
 			projectController := controllers.NewProjectController()
 			projectGroup := protected.Group("/projects")
-			projectGroup.Use(middleware.RoleMiddleware("pemohon"))
+			projectGroup.Use(middleware.RoleMiddleware("pemohon", "admin"))
 			{
 				projectGroup.GET("", projectController.GetMyProjects)
 				projectGroup.POST("", projectController.CreateProject)
@@ -81,10 +81,10 @@ func SetupRouter() *gin.Engine {
 				projectGroup.DELETE("/:id/documents/:docId", docUploadController.DeleteDocument)
 			}
 
-			// ─── Reviews (Penilai) ─────────────────────────────────
+			// ─── Reviews (Penilai & Admin) ─────────────────────────
 			reviewController := controllers.NewReviewController()
 			reviewGroup := protected.Group("/reviews")
-			reviewGroup.Use(middleware.RoleMiddleware("penilai"))
+			reviewGroup.Use(middleware.RoleMiddleware("penilai", "admin"))
 			{
 				reviewGroup.GET("/projects", reviewController.GetProjectsForReview)
 				reviewGroup.GET("/projects/:id", reviewController.GetProjectForReview)
@@ -93,21 +93,29 @@ func SetupRouter() *gin.Engine {
 				reviewGroup.GET("/all-history", reviewController.GetAllReviewHistory)
 			}
 
-			// ─── Document Download (Both roles) ────────────────────
+			// ─── Document Download (All Roles) ────────────────────
 			docUploadController := controllers.NewDocumentUploadController()
 			protected.GET("/documents/:id/download", docUploadController.DownloadDocument)
 
-			// ─── Dashboard (Both roles) ────────────────────────────
+			// ─── Dashboard (All Roles) ────────────────────────────
 			dashboardController := controllers.NewDashboardController()
 			protected.GET("/dashboard/stats", dashboardController.GetStats)
 			protected.GET("/dashboard/chart-data", dashboardController.GetChartData)
 
-			// ─── User Management (Penilai only) ────────────────────
+			// ─── User Management (Admin & Penilai) ─────────────────
 			userGroup := protected.Group("/users")
-			userGroup.Use(middleware.RoleMiddleware("penilai"))
+			userGroup.Use(middleware.RoleMiddleware("admin", "penilai"))
 			{
 				userGroup.GET("", userController.GetUsers)
 				userGroup.GET("/:id", userController.GetUserByID)
+			}
+
+			// Admin-only user management (Create & Delete users/penilai)
+			adminUserGroup := protected.Group("/users")
+			adminUserGroup.Use(middleware.RoleMiddleware("admin"))
+			{
+				adminUserGroup.POST("", userController.CreateUser)
+				adminUserGroup.DELETE("/:id", userController.DeleteUser)
 			}
 		}
 	}

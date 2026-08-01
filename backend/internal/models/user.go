@@ -10,6 +10,7 @@ import (
 type UserRole string
 
 const (
+	RoleAdmin   UserRole = "admin"
 	RolePemohon UserRole = "pemohon"
 	RolePenilai UserRole = "penilai"
 )
@@ -28,12 +29,21 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-// RegisterDTO is the request body for user registration
+// RegisterDTO is the request body for public user registration (Pemohon only)
 type RegisterDTO struct {
+	Name     string `json:"name" binding:"required,min=3,max=100"`
+	Email    string `json:"email" binding:"required,email,max=100"`
+	Password string `json:"password" binding:"required,min=8,max=128"`
+	Phone    string `json:"phone" binding:"max=20"`
+	Company  string `json:"company" binding:"max=150"`
+}
+
+// CreateUserByAdminDTO is the request body for Admin to create users (Penilai / Pemohon / Admin)
+type CreateUserByAdminDTO struct {
 	Name     string   `json:"name" binding:"required,min=3,max=100"`
 	Email    string   `json:"email" binding:"required,email,max=100"`
 	Password string   `json:"password" binding:"required,min=8,max=128"`
-	Role     UserRole `json:"role" binding:"required,oneof=pemohon penilai"`
+	Role     UserRole `json:"role" binding:"required,oneof=admin pemohon penilai"`
 	Phone    string   `json:"phone" binding:"max=20"`
 	Company  string   `json:"company" binding:"max=150"`
 }

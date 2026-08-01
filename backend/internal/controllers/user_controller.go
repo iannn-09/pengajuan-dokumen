@@ -18,8 +18,61 @@ func NewUserController() *UserController {
 	return &UserController{}
 }
 
+// CreateUser handles POST /api/v1/users (Admin only)
+// Admin can create Penilai, Pemohon, or Admin accounts
+func (uc *UserController) CreateUser(c *gin.Context) {
+	var dto models.CreateUserByAdminDTO
+	if err := c.ShouldBindJSON(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid user data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Check if email already exists
+	var existingUser models.User
+	if err := config.DB.Where("email = ?", dto.Email).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"error": "Email already registered",
+		})
+		return
+	}
+
+	// Hash password with bcrypt
+	hashedPassword, err := middleware.HashPassword(dto.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to process password",
+		})
+		return
+	}
+
+	user := models.User{
+		Name:     dto.Name,
+		Email:    dto.Email,
+		Password: hashedPassword,
+		Role:     dto.Role,
+		Phone:    dto.Phone,
+		Company:  dto.Company,
+	}
+
+	if err := config.DB.Create(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create user account",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"status":  "success",
+		"message": "User account created successfully by admin",
+		"data":    user.ToResponse(),
+	})
+}
+
 // GetUsers handles GET /api/v1/users
-// Lists all users with pagination (penilai only)
+// Lists all users with pagination (Admin & Penilai)
 func (uc *UserController) GetUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "20"))
@@ -86,6 +139,27 @@ func (uc *UserController) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"data":   user.ToResponse(),
+	})
+}
+
+// DeleteUser handles DELETE /api/v1/users/:id (Admin only)
+func (uc *UserController) DeleteUser(c *gin.Context) {
+	id := c.Param("id")
+	var user models.User
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err := config.DB.Delete(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "User deleted successfully",
 	})
 }
 
