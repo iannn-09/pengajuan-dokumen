@@ -42,6 +42,7 @@ const isOnline = ref(false)
 
 const pageNameMap = {
   Dashboard: 'Dashboard',
+  MasterDocumentType: 'Master Jenis Dokumen Kelayakan',
   UserManagement: 'Manajemen User & Penilai',
   ProjectList: 'Daftar Project Permohonan',
   ProjectCreate: 'Buat Pengajuan Baru',

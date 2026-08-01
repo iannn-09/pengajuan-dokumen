@@ -53,6 +53,11 @@ func SetupRouter() *gin.Engine {
 			authGroup.POST("/login", authController.Login)
 		}
 
+		// Master DocumentTypes (public read for options dropdown)
+		docTypeController := controllers.NewDocumentTypeController()
+		v1.GET("/document-types", docTypeController.GetDocumentTypes)
+		v1.GET("/document-types/:id", docTypeController.GetDocumentTypeByID)
+
 		// ─── Protected Routes (JWT Required) ───────────────────────
 		protected := v1.Group("")
 		protected.Use(middleware.JWTAuthMiddleware())
@@ -62,7 +67,16 @@ func SetupRouter() *gin.Engine {
 			protected.GET("/auth/me", authController.Me)
 			protected.PUT("/auth/profile", userController.UpdateProfile)
 
-			// ─── Projects (Pemohon) ────────────────────────────────
+			// ─── Master Document Types (Admin Only CRUD) ───────────
+			adminDocTypeGroup := protected.Group("/document-types")
+			adminDocTypeGroup.Use(middleware.RoleMiddleware("admin"))
+			{
+				adminDocTypeGroup.POST("", docTypeController.CreateDocumentType)
+				adminDocTypeGroup.PUT("/:id", docTypeController.UpdateDocumentType)
+				adminDocTypeGroup.DELETE("/:id", docTypeController.DeleteDocumentType)
+			}
+
+			// ─── Projects (Pemohon & Admin) ────────────────────────
 			projectController := controllers.NewProjectController()
 			projectGroup := protected.Group("/projects")
 			projectGroup.Use(middleware.RoleMiddleware("pemohon", "admin"))
@@ -110,7 +124,7 @@ func SetupRouter() *gin.Engine {
 				userGroup.GET("/:id", userController.GetUserByID)
 			}
 
-			// Admin-only user management (Create & Delete users/penilai)
+			// Admin-only user management
 			adminUserGroup := protected.Group("/users")
 			adminUserGroup.Use(middleware.RoleMiddleware("admin"))
 			{

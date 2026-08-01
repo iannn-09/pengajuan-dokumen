@@ -26,6 +26,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/document-types',
+    name: 'MasterDocumentType',
+    component: () => import('../views/MasterDocumentType.vue'),
+    meta: { requiresAuth: true, allowedRoles: ['admin'] }
+  },
+  {
     path: '/users',
     name: 'UserManagement',
     component: () => import('../views/UserManagement.vue'),

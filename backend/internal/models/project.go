@@ -26,6 +26,10 @@ type Project struct {
 	Description   string         `gorm:"type:text" json:"description"`
 	CompanyName   string         `gorm:"size:200" json:"company_name"`
 
+	// Relation to Master DocumentType
+	DocumentTypeID *uint         `gorm:"index" json:"document_type_id,omitempty"`
+	DocumentType   *DocumentType `gorm:"foreignKey:DocumentTypeID" json:"document_type,omitempty"`
+
 	// Foreign key to User (pemohon)
 	UserID uint `gorm:"not null;index" json:"user_id"`
 	User   User `gorm:"foreignKey:UserID" json:"user,omitempty"`
@@ -48,16 +52,18 @@ type Project struct {
 
 // CreateProjectDTO is the request body for creating a new project
 type CreateProjectDTO struct {
-	Title       string `json:"title" binding:"required,min=5,max=255"`
-	Description string `json:"description" binding:"max=5000"`
-	CompanyName string `json:"company_name" binding:"max=200"`
+	Title          string `json:"title" binding:"required,min=5,max=255"`
+	Description    string `json:"description" binding:"max=5000"`
+	CompanyName    string `json:"company_name" binding:"max=200"`
+	DocumentTypeID *uint  `json:"document_type_id"`
 }
 
 // UpdateProjectDTO is the request body for updating a draft/revision project
 type UpdateProjectDTO struct {
-	Title       string `json:"title" binding:"required,min=5,max=255"`
-	Description string `json:"description" binding:"max=5000"`
-	CompanyName string `json:"company_name" binding:"max=200"`
+	Title          string `json:"title" binding:"required,min=5,max=255"`
+	Description    string `json:"description" binding:"max=5000"`
+	CompanyName    string `json:"company_name" binding:"max=200"`
+	DocumentTypeID *uint  `json:"document_type_id"`
 }
 
 // ProjectListResponse is the paginated response for project listing

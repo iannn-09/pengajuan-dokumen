@@ -20,6 +20,7 @@ func main() {
 	log.Println("Running AutoMigrate database models...")
 	err := db.AutoMigrate(
 		&models.User{},
+		&models.DocumentType{},
 		&models.Project{},
 		&models.Document{},
 		&models.ReviewHistory{},

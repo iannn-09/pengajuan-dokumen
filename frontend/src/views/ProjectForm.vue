@@ -8,6 +8,29 @@
     <div class="glass-card form-card">
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
+          <label class="form-label">Jenis Dokumen Kelayakan *</label>
+          <select v-model="form.document_type_id" class="form-select" @change="onDocTypeChange" required>
+            <option :value="null">-- Pilih Jenis Dokumen Kelayakan --</option>
+            <option v-for="dt in docTypes" :key="dt.id" :value="dt.id">
+              {{ dt.code }} - {{ dt.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Dynamic Requirements Info Box -->
+        <div v-if="selectedDocType" class="doc-type-info-box">
+          <div class="info-header">
+            <span class="info-code">{{ selectedDocType.code }}</span>
+          </div>
+          <h4 class="info-title">{{ selectedDocType.name }}</h4>
+          <div v-if="selectedDocType.description" class="info-desc html-content" v-html="selectedDocType.description"></div>
+          <div class="req-box">
+            <strong>📋 Berkas Persyaratan Wajib yang Harus Dilampirkan:</strong>
+            <div class="req-text html-content" v-html="selectedDocType.requirement"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Judul Permohonan Dokumen *</label>
           <input 
             v-model="form.title" 
@@ -35,7 +58,7 @@
             v-model="form.description" 
             class="form-textarea" 
             placeholder="Jelaskan ruang lingkup, lokasi, dan latar belakang pengajuan permohonan dokumen kelayakan..."
-            rows="5"
+            rows="4"
           ></textarea>
         </div>
 
@@ -97,14 +120,40 @@ const router = useRouter()
 const isEdit = computed(() => !!route.params.id)
 const project = ref(null)
 const documents = ref([])
+const docTypes = ref([])
+const selectedDocType = ref(null)
+
 const submitting = ref(false)
 const fileInput = ref(null)
 
 const form = reactive({
   title: '',
   company_name: '',
-  description: ''
+  description: '',
+  document_type_id: null
 })
+
+const fetchDocTypes = async () => {
+  try {
+    const res = await apiClient.get('/document-types?active_only=true')
+    if (res.data?.data) {
+      docTypes.value = res.data.data
+      if (form.document_type_id) {
+        onDocTypeChange()
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch document types:', err)
+  }
+}
+
+const onDocTypeChange = () => {
+  if (!form.document_type_id) {
+    selectedDocType.value = null
+    return
+  }
+  selectedDocType.value = docTypes.value.find(d => d.id === form.document_type_id) || null
+}
 
 const fetchProject = async () => {
   if (!isEdit.value) return
@@ -115,7 +164,9 @@ const fetchProject = async () => {
       form.title = project.value.title
       form.company_name = project.value.company_name
       form.description = project.value.description
+      form.document_type_id = project.value.document_type_id || null
       documents.value = project.value.documents || []
+      onDocTypeChange()
     }
   } catch (err) {
     alert('Gagal memuat data project: ' + (err.response?.data?.error || err.message))
@@ -182,8 +233,9 @@ const formatSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-onMounted(() => {
-  fetchProject()
+onMounted(async () => {
+  await fetchDocTypes()
+  await fetchProject()
 })
 </script>
 
@@ -211,6 +263,60 @@ onMounted(() => {
 .form-card, .upload-card {
   padding: 1.75rem;
 }
+
+.doc-type-info-box {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.info-code {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+
+.info-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.info-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.req-box {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(99, 102, 241, 0.3);
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.req-text {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.html-content :deep(p) { margin-bottom: 0.35rem; }
+.html-content :deep(ul), .html-content :deep(ol) { padding-left: 1.2rem; margin-bottom: 0.35rem; }
 
 .form-actions {
   display: flex;

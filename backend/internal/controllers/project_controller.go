@@ -44,12 +44,13 @@ func (pc *ProjectController) CreateProject(c *gin.Context) {
 	projectNumber := fmt.Sprintf("PRJ-%s-%04d", time.Now().Format("20060102"), r.Intn(10000))
 
 	project := models.Project{
-		ProjectNumber: projectNumber,
-		Title:         dto.Title,
-		Description:   dto.Description,
-		CompanyName:   dto.CompanyName,
-		UserID:        userID,
-		Status:        models.StatusDraft,
+		ProjectNumber:  projectNumber,
+		Title:          dto.Title,
+		Description:    dto.Description,
+		CompanyName:    dto.CompanyName,
+		DocumentTypeID: dto.DocumentTypeID,
+		UserID:         userID,
+		Status:         models.StatusDraft,
 	}
 
 	if err := config.DB.Create(&project).Error; err != nil {
@@ -57,8 +58,8 @@ func (pc *ProjectController) CreateProject(c *gin.Context) {
 		return
 	}
 
-	// Reload with user relation
-	config.DB.Preload("User").First(&project, project.ID)
+	// Reload with relations
+	config.DB.Preload("User").Preload("DocumentType").First(&project, project.ID)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  "success",
@@ -103,7 +104,7 @@ func (pc *ProjectController) GetMyProjects(c *gin.Context) {
 
 	var projects []models.Project
 	offset := (page - 1) * perPage
-	if err := query.Preload("User").Order("created_at desc").Offset(offset).Limit(perPage).Find(&projects).Error; err != nil {
+	if err := query.Preload("User").Preload("DocumentType").Order("created_at desc").Offset(offset).Limit(perPage).Find(&projects).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
 		return
 	}
@@ -136,6 +137,7 @@ func (pc *ProjectController) GetProjectByID(c *gin.Context) {
 
 	if err := config.DB.
 		Preload("User").
+		Preload("DocumentType").
 		Preload("Documents").
 		Preload("ReviewHistories", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at desc")
@@ -197,11 +199,15 @@ func (pc *ProjectController) UpdateProject(c *gin.Context) {
 	project.Title = dto.Title
 	project.Description = dto.Description
 	project.CompanyName = dto.CompanyName
+	project.DocumentTypeID = dto.DocumentTypeID
 
 	if err := config.DB.Save(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
 		return
 	}
+
+	// Reload relations
+	config.DB.Preload("DocumentType").First(&project, project.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "success",
