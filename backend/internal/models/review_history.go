@@ -18,7 +18,7 @@ type ReviewHistory struct {
 
 	// Relations
 	Reviewer User    `gorm:"foreignKey:ReviewerID" json:"reviewer,omitempty"`
-	Project  Project `gorm:"foreignKey:ProjectID" json:"-"`
+	Project  Project `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
 }
 
 // AssessProjectDTO is the request body for penilai to assess a project

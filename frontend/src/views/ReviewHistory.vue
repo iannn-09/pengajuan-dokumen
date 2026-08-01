@@ -2,8 +2,13 @@
   <div class="page-container">
     <div class="header-actions">
       <div>
-        <h1 class="page-title">Riwayat Penilaian Saya</h1>
-        <p class="page-subtitle">Log audit seluruh keputusan penilaian yang pernah Anda lakukan.</p>
+        <h1 class="page-title">{{ auth.isAdmin ? 'Riwayat Audit & Seluruh Penilaian' : 'Riwayat Penilaian Saya' }}</h1>
+        <p class="page-subtitle">
+          {{ auth.isAdmin 
+              ? 'Log audit seluruh keputusan penilaian permohonan dokumen oleh seluruh Penilai.' 
+              : 'Log audit seluruh keputusan penilaian yang telah Anda lakukan.' 
+          }}
+        </p>
       </div>
     </div>
 
@@ -13,7 +18,7 @@
     <!-- Empty State -->
     <div v-else-if="histories.length === 0" class="glass-card empty-card">
       <h3>Belum Ada Riwayat Penilaian</h3>
-      <p>Anda belum pernah melakukan penilaian permohonan dokumen.</p>
+      <p>Belum ada log aktivitas penilaian permohonan dokumen.</p>
     </div>
 
     <!-- History Table -->
@@ -25,6 +30,7 @@
             <th>No. Project</th>
             <th>Judul Project</th>
             <th>Pemohon / Perusahaan</th>
+            <th>Penilai / Verifikator</th>
             <th>Perubahan Status</th>
             <th>Catatan Evaluasi</th>
           </tr>
@@ -32,13 +38,19 @@
         <tbody>
           <tr v-for="item in histories" :key="item.id">
             <td class="font-mono">{{ formatDate(item.created_at) }}</td>
-            <td class="font-mono text-accent">{{ item.project?.project_number }}</td>
-            <td class="font-bold cursor-pointer" @click="$router.push(`/reviews/${item.project_id}`)">
-              {{ item.project?.title }}
+            <td class="font-mono text-accent">{{ item.project?.project_number || '-' }}</td>
+            <td class="font-bold cursor-pointer" @click="$router.push(auth.isAdmin ? `/reviews/${item.project_id}` : `/reviews/${item.project_id}`)">
+              {{ item.project?.title || '-' }}
             </td>
             <td>
               <div>{{ item.project?.user?.name || '-' }}</div>
               <small class="text-muted">{{ item.project?.company_name || '-' }}</small>
+            </td>
+            <td>
+              <div class="reviewer-info">
+                <div class="font-bold text-main">{{ item.reviewer?.name || 'Penilai' }}</div>
+                <small class="text-subtle">{{ item.reviewer?.email || '-' }}</small>
+              </div>
             </td>
             <td>
               <div class="status-change">
@@ -67,10 +79,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useAuthStore } from '../stores/auth'
 import apiClient from '../services/api'
 import StatusBadge from '../components/StatusBadge.vue'
 import Pagination from '../components/Pagination.vue'
 
+const auth = useAuthStore()
 const loading = ref(true)
 const histories = ref([])
 
@@ -84,7 +98,8 @@ const meta = reactive({
 const fetchHistory = async (page = 1) => {
   loading.value = true
   try {
-    const res = await apiClient.get(`/reviews/history?page=${page}&per_page=${meta.per_page}`)
+    const endpoint = auth.isAdmin ? '/reviews/all-history' : '/reviews/history'
+    const res = await apiClient.get(`${endpoint}?page=${page}&per_page=${meta.per_page}`)
     if (res.data?.data) {
       histories.value = res.data.data
       if (res.data.meta) {
@@ -187,9 +202,16 @@ onMounted(() => {
 
 .font-mono { font-family: monospace; font-size: 0.82rem; }
 .font-bold { font-weight: 700; }
+.text-main { color: var(--text-main); }
+.text-subtle { color: var(--text-subtle); display: block; font-size: 0.78rem; }
 .text-accent { color: var(--accent-primary); }
 .text-muted { color: var(--text-muted); }
 .cursor-pointer { cursor: pointer; }
+
+.reviewer-info {
+  display: flex;
+  flex-direction: column;
+}
 
 .status-change {
   display: flex;
@@ -198,7 +220,7 @@ onMounted(() => {
 }
 
 .notes-cell {
-  max-width: 300px;
+  max-width: 280px;
   white-space: pre-wrap;
   font-size: 0.85rem;
   color: var(--text-muted);
