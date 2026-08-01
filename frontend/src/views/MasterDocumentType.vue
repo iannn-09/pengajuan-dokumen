@@ -24,6 +24,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th class="text-center w-12">No</th>
             <th>Kode</th>
             <th>Nama Jenis Dokumen</th>
             <th>Deskripsi & Target Pengerjaan</th>
@@ -33,7 +34,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="dt in docTypes" :key="dt.id">
+          <tr v-for="(dt, index) in docTypes" :key="dt.id">
+            <td class="text-center font-mono text-muted">{{ index + 1 }}</td>
             <td class="font-mono text-accent font-bold">{{ dt.code }}</td>
             <td class="font-bold">{{ dt.name }}</td>
             <td>
@@ -299,7 +301,10 @@ onMounted(() => fetchDocTypes())
 .font-mono { font-family: monospace; font-size: 0.85rem; }
 .font-bold { font-weight: 700; }
 .text-accent { color: var(--accent-primary); }
+.text-muted { color: var(--text-muted); }
+.text-center { text-align: center; }
 .text-right { text-align: right; }
+.w-12 { width: 3rem; }
 
 .desc-preview {
   max-width: 260px;

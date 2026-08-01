@@ -42,6 +42,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th class="text-center w-12">No</th>
             <th>No. Project</th>
             <th>Judul Permohonan</th>
             <th>Pemohon / Perusahaan</th>
@@ -51,7 +52,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in projects" :key="item.id">
+          <tr v-for="(item, index) in projects" :key="item.id">
+            <td class="text-center font-mono text-muted">{{ (meta.page - 1) * meta.per_page + index + 1 }}</td>
             <td class="font-mono text-accent">{{ item.project_number }}</td>
             <td class="font-bold cursor-pointer" @click="$router.push(`/reviews/${item.id}`)">
               {{ item.title }}
@@ -237,8 +239,10 @@ onMounted(() => {
 .font-bold { font-weight: 700; }
 .text-accent { color: var(--accent-primary); }
 .text-muted { color: var(--text-muted); }
-.cursor-pointer { cursor: pointer; }
+.text-center { text-align: center; }
 .text-right { text-align: right; }
+.cursor-pointer { cursor: pointer; }
+.w-12 { width: 3rem; }
 
 @media (max-width: 640px) {
   .toolbar-card {

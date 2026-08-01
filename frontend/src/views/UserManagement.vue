@@ -46,6 +46,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th class="text-center w-12">No</th>
             <th>Nama Lengkap</th>
             <th>Email</th>
             <th>Role / Hak Akses</th>
@@ -56,7 +57,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.id">
+          <tr v-for="(user, index) in users" :key="user.id">
+            <td class="text-center font-mono text-muted">{{ (meta.page - 1) * meta.per_page + index + 1 }}</td>
             <td class="font-bold">{{ user.name }}</td>
             <td class="font-mono text-accent">{{ user.email }}</td>
             <td>
@@ -360,7 +362,10 @@ onMounted(() => fetchUsers())
 .font-mono { font-family: monospace; font-size: 0.85rem; }
 .font-bold { font-weight: 700; }
 .text-accent { color: var(--accent-primary); }
+.text-muted { color: var(--text-muted); }
+.text-center { text-align: center; }
 .text-right { text-align: right; }
+.w-12 { width: 3rem; }
 
 .role-badge {
   padding: 0.25rem 0.65rem;
