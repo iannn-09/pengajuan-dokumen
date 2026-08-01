@@ -29,6 +29,15 @@
         <h3 class="section-title">Detail & Deskripsi Permohonan</h3>
         <p class="description-text">{{ project.description || 'Tidak ada deskripsi tambahan.' }}</p>
 
+        <!-- Document Type Info -->
+        <div v-if="project.document_type" class="doc-type-box">
+          <h4 class="doc-type-title">Jenis Dokumen: {{ project.document_type.name }} ({{ project.document_type.code }})</h4>
+          <div v-if="project.document_type.requirement" class="req-box">
+            <strong>Persyaratan Berkas Wajib:</strong>
+            <div class="html-content" v-html="project.document_type.requirement"></div>
+          </div>
+        </div>
+
         <h3 class="section-title margin-top">Dokumen Lampiran ({{ documents.length }})</h3>
         <div v-if="documents.length === 0" class="empty-text">Pemohon belum mengunggah dokumen lampiran.</div>
         <div v-else class="doc-list">
@@ -99,6 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import apiClient from '../services/api'
 import StatusBadge from '../components/StatusBadge.vue'
 import ReviewTimeline from '../components/ReviewTimeline.vue'
+import { alertSuccess, alertError, alertWarning, confirmDialog } from '../utils/swal'
 
 const route = useRoute()
 const router = useRouter()
@@ -120,7 +130,7 @@ const fetchProject = async () => {
       project.value = res.data.data
     }
   } catch (err) {
-    alert('Gagal memuat detail permohonan: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Memuat Detail', err.response?.data?.error || err.message)
     router.push('/reviews')
   } finally {
     loading.value = false
@@ -129,21 +139,27 @@ const fetchProject = async () => {
 
 const handleAssess = async () => {
   if (action.value !== 'approve' && !notes.value.trim()) {
-    alert('Harap isi catatan penilai untuk memberikan revisi atau penolakan!')
+    alertWarning('Catatan Wajib Diisi', 'Harap isi catatan penilai untuk memberikan instruksi revisi atau alasan penolakan!')
     return
   }
 
-  if (confirm(`Simpan keputusan penilaian (${action.value.toUpperCase()}) untuk permohonan ini?`)) {
+  const confirmed = await confirmDialog(
+    'Simpan Keputusan Penilaian?',
+    `Simpan keputusan penilaian (${action.value.toUpperCase()}) untuk permohonan ini?`,
+    'Ya, Simpan Keputusan'
+  )
+
+  if (confirmed) {
     submitting.value = true
     try {
       await apiClient.post(`/reviews/projects/${project.value.id}/assess`, {
         action: action.value,
         notes: notes.value
       })
-      alert('Penilaian berhasil disimpan!')
+      alertSuccess('Penilaian Berhasil!', 'Keputusan penilaian telah berhasil disimpan.')
       router.push('/reviews')
     } catch (err) {
-      alert('Gagal menyimpan penilaian: ' + (err.response?.data?.error || err.message))
+      alertError('Gagal Menyimpan Penilaian', err.response?.data?.error || err.message)
     } finally {
       submitting.value = false
     }
@@ -256,6 +272,26 @@ onMounted(() => {
   padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+}
+
+.doc-type-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.doc-type-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.req-box {
+  margin-top: 0.5rem;
+  font-size: 0.83rem;
+  color: var(--text-muted);
 }
 
 .doc-list {

@@ -93,7 +93,7 @@
 
             <!-- Tiptap Rich Text Editor for Requirements -->
             <div class="form-group">
-              <label class="form-label">Daftar Persyaratan Berkas Wajib * (Tiptap Rich Text)</label>
+              <label class="form-label">Daftar Persyaratan Berkas Wajib *</label>
               <TiptapEditor 
                 v-model="form.requirement" 
                 placeholder="Tuliskan rincian dokumen wajib (gunakan Bullet/Numbered list)..." 
@@ -102,7 +102,7 @@
 
             <!-- Tiptap Rich Text Editor for Description -->
             <div class="form-group">
-              <label class="form-label">Deskripsi & Target Pengerjaan (Tiptap Rich Text)</label>
+              <label class="form-label">Deskripsi & Target Pengerjaan</label>
               <TiptapEditor 
                 v-model="form.description" 
                 placeholder="Penjelasan umum mengenai ruang lingkup & estimasi target waktu pengerjaan verifikasi..." 
@@ -133,6 +133,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import apiClient from '../services/api'
 import TiptapEditor from '../components/TiptapEditor.vue'
+import { alertSuccess, alertError, alertWarning, confirmDialog } from '../utils/swal'
 
 const loading = ref(true)
 const submitting = ref(false)
@@ -192,7 +193,7 @@ const openEditModal = (dt) => {
 
 const handleSubmit = async () => {
   if (!form.requirement || form.requirement === '<p></p>') {
-    alert('Harap isi rincian berkas persyaratan wajib!')
+    alertWarning('Form Tidak Lengkap', 'Harap isi rincian berkas persyaratan wajib!')
     return
   }
 
@@ -200,27 +201,34 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await apiClient.put(`/document-types/${currentId.value}`, form)
-      alert('Master jenis dokumen berhasil diperbarui!')
+      alertSuccess('Berhasil!', 'Master jenis dokumen berhasil diperbarui!')
     } else {
       await apiClient.post('/document-types', form)
-      alert('Master jenis dokumen baru berhasil ditambahkan!')
+      alertSuccess('Berhasil!', 'Master jenis dokumen baru berhasil ditambahkan!')
     }
     isModalOpen.value = false
     fetchDocTypes()
   } catch (err) {
-    alert('Gagal menyimpan: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Menyimpan', err.response?.data?.error || err.message)
   } finally {
     submitting.value = false
   }
 }
 
 const confirmDelete = async (dt) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus jenis dokumen "${dt.name}"?`)) {
+  const confirmed = await confirmDialog(
+    'Hapus Master Jenis Dokumen?',
+    `Apakah Anda yakin ingin menghapus "${dt.name}"?`,
+    'Ya, Hapus Data'
+  )
+
+  if (confirmed) {
     try {
       await apiClient.delete(`/document-types/${dt.id}`)
+      alertSuccess('Terhapus', 'Jenis dokumen berhasil dihapus.')
       fetchDocTypes()
     } catch (err) {
-      alert('Gagal menghapus: ' + (err.response?.data?.error || err.message))
+      alertError('Gagal Menghapus', err.response?.data?.error || err.message)
     }
   }
 }

@@ -113,6 +113,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import apiClient from '../services/api'
+import { alertSuccess, alertError, alertWarning, confirmDialog } from '../utils/swal'
 
 const route = useRoute()
 const router = useRouter()
@@ -169,7 +170,7 @@ const fetchProject = async () => {
       onDocTypeChange()
     }
   } catch (err) {
-    alert('Gagal memuat data project: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Memuat', err.response?.data?.error || err.message)
     router.push('/projects')
   }
 }
@@ -179,14 +180,14 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await apiClient.put(`/projects/${route.params.id}`, form)
-      alert('Project berhasil diperbarui!')
+      alertSuccess('Berhasil!', 'Permohonan berhasil diperbarui.')
     } else {
       const res = await apiClient.post('/projects', form)
-      alert('Draft project berhasil dibuat! Anda dapat mengunggah dokumen pendukung pada halaman berikutnya.')
+      alertSuccess('Draft Dibuat!', 'Draft permohonan berhasil dibuat. Silakan unggah dokumen pendukung.')
       router.push(`/projects/${res.data.data.id}/edit`)
     }
   } catch (err) {
-    alert('Gagal menyimpan: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Menyimpan', err.response?.data?.error || err.message)
   } finally {
     submitting.value = false
   }
@@ -203,20 +204,23 @@ const handleFileUpload = async (event) => {
     await apiClient.post(`/projects/${route.params.id}/documents`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
+    alertSuccess('Upload Berhasil', `File "${file.name}" berhasil diunggah.`)
     fetchProject()
     fileInput.value.value = ''
   } catch (err) {
-    alert('Gagal upload dokumen: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Upload Dokumen', err.response?.data?.error || err.message)
   }
 }
 
 const deleteDoc = async (docId) => {
-  if (confirm('Hapus dokumen ini?')) {
+  const confirmed = await confirmDialog('Hapus Dokumen?', 'Apakah Anda yakin ingin menghapus dokumen ini?', 'Ya, Hapus File')
+  if (confirmed) {
     try {
       await apiClient.delete(`/projects/${route.params.id}/documents/${docId}`)
+      alertSuccess('Terhapus', 'Dokumen lampiran berhasil dihapus.')
       fetchProject()
     } catch (err) {
-      alert('Gagal menghapus dokumen: ' + (err.response?.data?.error || err.message))
+      alertError('Gagal Menghapus', err.response?.data?.error || err.message)
     }
   }
 }

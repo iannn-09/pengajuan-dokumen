@@ -172,6 +172,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import apiClient from '../services/api'
 import Pagination from '../components/Pagination.vue'
+import { alertSuccess, alertError, confirmDialog } from '../utils/swal'
 
 const auth = useAuthStore()
 
@@ -243,24 +244,31 @@ const handleCreateUser = async () => {
   creating.value = true
   try {
     await apiClient.post('/users', form)
-    alert(`Berhasil membuat akun ${form.role.toUpperCase()} untuk ${form.email}!`)
+    alertSuccess('Akun Dibuat!', `Berhasil membuat akun ${form.role.toUpperCase()} untuk ${form.email}.`)
     isCreateModalOpen.value = false
     resetForm()
     fetchUsers()
   } catch (err) {
-    alert('Gagal membuat akun: ' + (err.response?.data?.error || err.message))
+    alertError('Gagal Membuat Akun', err.response?.data?.error || err.message)
   } finally {
     creating.value = false
   }
 }
 
 const confirmDelete = async (user) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus akun "${user.name}" (${user.email})?`)) {
+  const confirmed = await confirmDialog(
+    'Hapus Akun User?',
+    `Apakah Anda yakin ingin menghapus akun "${user.name}" (${user.email})?`,
+    'Ya, Hapus Akun'
+  )
+
+  if (confirmed) {
     try {
       await apiClient.delete(`/users/${user.id}`)
+      alertSuccess('Terhapus', 'Akun pengguna berhasil dihapus.')
       fetchUsers(meta.page)
     } catch (err) {
-      alert('Gagal menghapus user: ' + (err.response?.data?.error || err.message))
+      alertError('Gagal Menghapus', err.response?.data?.error || err.message)
     }
   }
 }

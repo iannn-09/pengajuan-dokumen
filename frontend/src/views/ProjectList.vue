@@ -108,6 +108,7 @@ import { ref, reactive, onMounted } from 'vue'
 import apiClient from '../services/api'
 import StatusBadge from '../components/StatusBadge.vue'
 import Pagination from '../components/Pagination.vue'
+import { alertSuccess, alertError, confirmDialog } from '../utils/swal'
 
 const loading = ref(true)
 const projects = ref([])
@@ -160,12 +161,19 @@ const onPageChange = (newPage) => {
 }
 
 const confirmDelete = async (project) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus permohonan "${project.title}"?`)) {
+  const confirmed = await confirmDialog(
+    'Hapus Permohonan?',
+    `Apakah Anda yakin ingin menghapus draft permohonan "${project.title}"?`,
+    'Ya, Hapus Draft'
+  )
+
+  if (confirmed) {
     try {
       await apiClient.delete(`/projects/${project.id}`)
+      alertSuccess('Terhapus', 'Draft permohonan berhasil dihapus.')
       fetchProjects(meta.page)
     } catch (err) {
-      alert('Gagal menghapus: ' + (err.response?.data?.error || err.message))
+      alertError('Gagal Menghapus', err.response?.data?.error || err.message)
     }
   }
 }
