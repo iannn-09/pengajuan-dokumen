@@ -18,7 +18,7 @@ func SetupRouter() *gin.Engine {
 	// Set max multipart memory for file uploads (10 MB)
 	r.MaxMultipartMemory = 10 << 20
 
-	// Serve uploaded files statically for direct viewing
+	// Serve uploaded files statically for direct viewing & avatars
 	r.Static("/uploads", "./uploads")
 	r.Static("/storage/uploads", "./uploads")
 	r.Static("/storage/upload", "./uploads")
@@ -67,10 +67,11 @@ func SetupRouter() *gin.Engine {
 		protected := v1.Group("")
 		protected.Use(middleware.JWTAuthMiddleware())
 		{
-			// Auth - profile
+			// Auth - profile & avatar
 			userController := controllers.NewUserController()
 			protected.GET("/auth/me", authController.Me)
 			protected.PUT("/auth/profile", userController.UpdateProfile)
+			protected.POST("/auth/avatar", userController.UploadAvatar)
 
 			// ─── Master Document Types (Admin Only CRUD) ───────────
 			adminDocTypeGroup := protected.Group("/document-types")

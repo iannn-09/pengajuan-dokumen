@@ -1,15 +1,20 @@
 package controllers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"pengajuan-dokumen/backend/internal/config"
 	"pengajuan-dokumen/backend/internal/middleware"
 	"pengajuan-dokumen/backend/internal/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserController struct{}
@@ -164,7 +169,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 }
 
 // UpdateProfile handles PUT /api/v1/auth/profile
-// User can update their own profile
+// User can update their own profile data and optionally change password
 func (uc *UserController) UpdateProfile(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
@@ -179,9 +184,10 @@ func (uc *UserController) UpdateProfile(c *gin.Context) {
 	}
 
 	type UpdateProfileDTO struct {
-		Name    string `json:"name" binding:"required,min=3,max=100"`
-		Phone   string `json:"phone" binding:"max=20"`
-		Company string `json:"company" binding:"max=150"`
+		Name     string `json:"name" binding:"required,min=3,max=100"`
+		Phone    string `json:"phone" binding:"max=20"`
+		Company  string `json:"company" binding:"max=150"`
+		Password string `json:"password" binding:"omitempty,min=6"`
 	}
 
 	var dto UpdateProfileDTO
@@ -194,6 +200,15 @@ func (uc *UserController) UpdateProfile(c *gin.Context) {
 	user.Phone = dto.Phone
 	user.Company = dto.Company
 
+	if dto.Password != "" {
+		hashed, err := middleware.HashPassword(dto.Password)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process new password"})
+			return
+		}
+		user.Password = hashed
+	}
+
 	if err := config.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
 		return
@@ -202,6 +217,75 @@ func (uc *UserController) UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "success",
 		"message": "Profile updated successfully",
+		"data":    user.ToResponse(),
+	})
+}
+
+// UploadAvatar handles POST /api/v1/auth/avatar
+func (uc *UserController) UploadAvatar(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to identify user"})
+		return
+	}
+
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	file, header, err := c.Request.FormFile("avatar")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No avatar file uploaded. Use 'avatar' form field."})
+		return
+	}
+	defer file.Close()
+
+	if header.Size > 5*1024*1024 { // 5MB
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Avatar file size exceeds 5MB limit"})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" && ext != ".webp" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid avatar format. Allowed: JPG, JPEG, PNG, GIF, WEBP"})
+		return
+	}
+
+	avatarDir := filepath.Join("uploads", "avatars")
+	if err := os.MkdirAll(avatarDir, 0750); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create avatar directory"})
+		return
+	}
+
+	storedName := fmt.Sprintf("avatar_user_%d_%s", user.ID, uuid.New().String()[:8]) + ext
+	storedPath := filepath.Join(avatarDir, storedName)
+
+	if err := c.SaveUploadedFile(header, storedPath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save avatar file"})
+		return
+	}
+
+	// Delete old avatar file if exists
+	if user.Avatar != "" {
+		oldPath := filepath.Join("uploads", "avatars", filepath.Base(user.Avatar))
+		os.Remove(oldPath)
+	}
+
+	// Save avatar relative path URL in DB
+	avatarUrl := fmt.Sprintf("/uploads/avatars/%s", storedName)
+	user.Avatar = avatarUrl
+
+	if err := config.DB.Save(&user).Error; err != nil {
+		os.Remove(storedPath)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user avatar"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Avatar uploaded successfully",
 		"data":    user.ToResponse(),
 	})
 }

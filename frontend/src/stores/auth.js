@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isPemohon = computed(() => userRole.value === 'pemohon')
   const isPenilai = computed(() => userRole.value === 'penilai')
   const userName = computed(() => user.value?.name || '')
+  const userCompany = computed(() => user.value?.company || '')
 
   // Actions
   function setAuth(tokenValue, userData) {
@@ -23,6 +24,11 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', tokenValue)
     localStorage.setItem('user', JSON.stringify(userData))
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${tokenValue}`
+  }
+
+  function updateUser(userData) {
+    user.value = { ...user.value, ...userData }
+    localStorage.setItem('user', JSON.stringify(user.value))
   }
 
   async function login(email, password) {
@@ -77,9 +83,12 @@ export const useAuthStore = defineStore('auth', () => {
     isPemohon,
     isPenilai,
     userName,
+    userCompany,
     login,
     register,
     fetchMe,
+    fetchUser: fetchMe,
+    updateUser,
     logout,
     setAuth,
   }

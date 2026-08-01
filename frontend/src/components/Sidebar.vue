@@ -63,16 +63,25 @@
           <span v-if="!isCollapsed">Riwayat Penilaian</span>
         </router-link>
       </template>
+
+      <!-- Common User Section -->
+      <div class="nav-label" v-if="!isCollapsed">AKUN</div>
+      <router-link to="/profile" class="nav-item" active-class="active" :title="isCollapsed ? 'Profil Saya' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span v-if="!isCollapsed">Profil Saya</span>
+      </router-link>
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-info" v-if="!isCollapsed">
-        <div class="user-avatar">{{ auth.userName?.charAt(0)?.toUpperCase() }}</div>
+      <router-link to="/profile" class="user-info" v-if="!isCollapsed" title="Lihat & Edit Profil">
+        <img v-if="auth.user?.avatar" :src="getAvatarUrl(auth.user.avatar)" class="user-avatar-img" />
+        <div v-else class="user-avatar">{{ auth.userName?.charAt(0)?.toUpperCase() }}</div>
+        
         <div class="user-details">
           <span class="user-name">{{ auth.userName }}</span>
           <span class="user-role">{{ getRoleLabel(auth.userRole) }}</span>
         </div>
-      </div>
+      </router-link>
       <button class="nav-item logout-btn" @click="auth.logout()" :title="isCollapsed ? 'Logout' : ''">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span v-if="!isCollapsed">Logout</span>
@@ -84,9 +93,16 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import apiClient from '../services/api'
 
 const auth = useAuthStore()
 const isCollapsed = ref(false)
+
+const getAvatarUrl = (path) => {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `${apiClient.defaults.baseURL.replace('/api/v1', '')}${path}`
+}
 
 const getRoleLabel = (role) => {
   if (role === 'admin') return 'Administrator'
@@ -161,12 +177,24 @@ const getRoleLabel = (role) => {
 .user-info {
   display: flex; align-items: center; gap: 0.65rem;
   padding: 0.5rem 0.5rem 0.65rem;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.user-info:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 .user-avatar {
   width: 34px; height: 34px; border-radius: 8px;
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   display: flex; align-items: center; justify-content: center;
   color: white; font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+}
+.user-avatar-img {
+  width: 34px; height: 34px; border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--accent-primary);
+  flex-shrink: 0;
 }
 .user-name { font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; }
 .user-role { font-size: 0.72rem; color: var(--text-muted); }

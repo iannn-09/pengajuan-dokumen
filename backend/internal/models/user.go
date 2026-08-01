@@ -24,6 +24,7 @@ type User struct {
 	Role      UserRole       `gorm:"size:20;not null;index" json:"role"`
 	Phone     string         `gorm:"size:20" json:"phone"`
 	Company   string         `gorm:"size:150" json:"company"`
+	Avatar    string         `gorm:"size:255" json:"avatar"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -56,12 +57,13 @@ type LoginDTO struct {
 
 // UserResponse is the sanitized user response (no password)
 type UserResponse struct {
-	ID        uint     `json:"id"`
-	Name      string   `json:"name"`
-	Email     string   `json:"email"`
-	Role      UserRole `json:"role"`
-	Phone     string   `json:"phone"`
-	Company   string   `json:"company"`
+	ID        uint      `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Role      UserRole  `json:"role"`
+	Phone     string    `json:"phone"`
+	Company   string    `json:"company"`
+	Avatar    string    `json:"avatar"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -74,6 +76,7 @@ func (u *User) ToResponse() UserResponse {
 		Role:      u.Role,
 		Phone:     u.Phone,
 		Company:   u.Company,
+		Avatar:    u.Avatar,
 		CreatedAt: u.CreatedAt,
 	}
 }

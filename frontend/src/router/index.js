@@ -26,6 +26,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/profile',
+    name: 'ProfileView',
+    component: () => import('../views/ProfileView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/document-types',
     name: 'MasterDocumentType',
     component: () => import('../views/MasterDocumentType.vue'),
