@@ -5,9 +5,9 @@
         <h1 class="page-title">Daftar Project Permohonan Saya</h1>
         <p class="page-subtitle">Kelola seluruh draf dan status pengajuan dokumen kelayakan Anda.</p>
       </div>
-      <router-link to="/projects/create" class="btn btn-primary">
+      <button class="btn btn-primary" @click="openCreateModal">
         + Buat Permohonan Baru
-      </router-link>
+      </button>
     </div>
 
     <!-- Filter & Search Toolbar -->
@@ -17,7 +17,7 @@
           v-model="search" 
           type="text" 
           class="form-input" 
-          placeholder="Cari berdasarkan judul, nomor project, atau perusahaan..." 
+          placeholder="Cari berdasarkan judul, nomor project, unit kerja, atau perusahaan..." 
           @input="debouncedFetch"
         />
       </div>
@@ -42,7 +42,7 @@
     <div v-else-if="projects.length === 0" class="glass-card empty-card">
       <h3>Belum Ada Permohonan</h3>
       <p>Tidak ada permohonan yang sesuai dengan filter atau pencarian Anda.</p>
-      <router-link to="/projects/create" class="btn btn-primary">Buat Permohonan Pertama</router-link>
+      <button class="btn btn-primary" @click="openCreateModal">Buat Permohonan Pertama</button>
     </div>
 
     <!-- Table View -->
@@ -52,7 +52,7 @@
           <tr>
             <th>No. Project</th>
             <th>Judul Permohonan</th>
-            <th>Nama Perusahaan</th>
+            <th>Perusahaan & Unit Kerja</th>
             <th>Status</th>
             <th>Tanggal Buat</th>
             <th class="text-right">Aksi</th>
@@ -62,9 +62,15 @@
           <tr v-for="item in projects" :key="item.id">
             <td class="font-mono text-accent">{{ item.project_number }}</td>
             <td class="font-bold cursor-pointer" @click="$router.push(`/projects/${item.id}`)">
-              {{ item.title }}
+              <div>{{ item.title }}</div>
+              <small v-if="item.document_type" class="text-muted font-normal">
+                {{ item.document_type.code }} - {{ item.document_type.name }}
+              </small>
             </td>
-            <td>{{ item.company_name || '-' }}</td>
+            <td>
+              <div>{{ item.company_name || '-' }}</div>
+              <small v-if="item.unit" class="text-accent">Unit: {{ item.unit }}</small>
+            </td>
             <td><StatusBadge :status="item.status" /></td>
             <td>{{ formatDate(item.created_at) }}</td>
             <td class="text-right">
@@ -75,7 +81,7 @@
                 <button 
                   v-if="item.status === 'DRAFT' || item.status === 'REVISION'" 
                   class="btn btn-secondary btn-sm" 
-                  @click="$router.push(`/projects/${item.id}/edit`)"
+                  @click="openEditModal(item.id)"
                 >
                   Edit
                 </button>
@@ -100,20 +106,34 @@
         @change-page="onPageChange"
       />
     </div>
+
+    <!-- 2-Step Wizard Create/Edit Modal Dialog -->
+    <CreateProjectModal 
+      :is-open="isModalOpen" 
+      :edit-project-id="editingProjectId" 
+      @close="isModalOpen = false" 
+      @created="fetchProjects"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import apiClient from '../services/api'
 import StatusBadge from '../components/StatusBadge.vue'
 import Pagination from '../components/Pagination.vue'
+import CreateProjectModal from '../components/CreateProjectModal.vue'
 import { alertSuccess, alertError, confirmDialog } from '../utils/swal'
 
+const route = useRoute()
 const loading = ref(true)
 const projects = ref([])
 const search = ref('')
 const statusFilter = ref('')
+
+const isModalOpen = ref(false)
+const editingProjectId = ref(null)
 
 const meta = reactive({
   page: 1,
@@ -121,6 +141,16 @@ const meta = reactive({
   total: 0,
   total_pages: 1
 })
+
+const openCreateModal = () => {
+  editingProjectId.value = null
+  isModalOpen.value = true
+}
+
+const openEditModal = (id) => {
+  editingProjectId.value = id
+  isModalOpen.value = true
+}
 
 const fetchProjects = async (page = 1) => {
   loading.value = true
@@ -184,8 +214,17 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+watch(() => route.query.create, (newVal) => {
+  if (newVal === 'true') {
+    openCreateModal()
+  }
+})
+
 onMounted(() => {
   fetchProjects()
+  if (route.query.create === 'true') {
+    openCreateModal()
+  }
 })
 </script>
 
@@ -278,7 +317,9 @@ onMounted(() => {
 
 .font-mono { font-family: monospace; }
 .font-bold { font-weight: 700; }
+.font-normal { font-weight: 400; }
 .text-accent { color: var(--accent-primary); }
+.text-muted { color: var(--text-muted); }
 .cursor-pointer { cursor: pointer; }
 .text-right { text-align: right; }
 

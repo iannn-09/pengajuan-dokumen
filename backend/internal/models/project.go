@@ -25,6 +25,7 @@ type Project struct {
 	Title         string         `gorm:"size:255;not null" json:"title"`
 	Description   string         `gorm:"type:text" json:"description"`
 	CompanyName   string         `gorm:"size:200" json:"company_name"`
+	Unit          string         `gorm:"size:200" json:"unit"` // Unit Kerja / Divisi / Pabrik
 
 	// Relation to Master DocumentType
 	DocumentTypeID *uint         `gorm:"index" json:"document_type_id,omitempty"`
@@ -55,6 +56,7 @@ type CreateProjectDTO struct {
 	Title          string `json:"title" binding:"required,min=5,max=255"`
 	Description    string `json:"description" binding:"max=5000"`
 	CompanyName    string `json:"company_name" binding:"max=200"`
+	Unit           string `json:"unit" binding:"max=200"`
 	DocumentTypeID *uint  `json:"document_type_id"`
 }
 
@@ -63,6 +65,7 @@ type UpdateProjectDTO struct {
 	Title          string `json:"title" binding:"required,min=5,max=255"`
 	Description    string `json:"description" binding:"max=5000"`
 	CompanyName    string `json:"company_name" binding:"max=200"`
+	Unit           string `json:"unit" binding:"max=200"`
 	DocumentTypeID *uint  `json:"document_type_id"`
 }
 

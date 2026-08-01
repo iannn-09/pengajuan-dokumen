@@ -218,6 +218,7 @@ func (duc *DocumentUploadController) DeleteDocument(c *gin.Context) {
 }
 
 // DownloadDocument handles GET /api/v1/documents/:id/download
+// Serves file with Content-Disposition: inline so browser renders PDF/images directly in new tab
 func (duc *DocumentUploadController) DownloadDocument(c *gin.Context) {
 	docID := c.Param("id")
 
@@ -238,7 +239,7 @@ func (duc *DocumentUploadController) DownloadDocument(c *gin.Context) {
 	if role == "pemohon" {
 		userID, _ := middleware.GetUserID(c)
 		if project.UserID != userID {
-			c.JSON(http.StatusForbidden, gin.H{"error": "You can only download documents from your own projects"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only view documents from your own projects"})
 			return
 		}
 	}
@@ -262,10 +263,26 @@ func (duc *DocumentUploadController) DownloadDocument(c *gin.Context) {
 		return
 	}
 
-	// Serve file with security headers
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", doc.FileName))
+	// Determine correct MIME type if missing or default
+	mimeType := doc.MimeType
+	if mimeType == "" || mimeType == "application/octet-stream" {
+		ext := strings.ToLower(filepath.Ext(doc.FileName))
+		switch ext {
+		case ".pdf":
+			mimeType = "application/pdf"
+		case ".jpg", ".jpeg":
+			mimeType = "image/jpeg"
+		case ".png":
+			mimeType = "image/png"
+		case ".gif":
+			mimeType = "image/gif"
+		}
+	}
+
+	// Set Content-Disposition: inline to allow inline rendering in browser tab (PDF & Images)
+	c.Header("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", doc.FileName))
 	c.Header("X-Content-Type-Options", "nosniff")
-	c.Header("Content-Type", doc.MimeType)
+	c.Header("Content-Type", mimeType)
 
 	// Validate docID is a number to prevent path traversal via parameter
 	if _, err := strconv.ParseUint(docID, 10, 64); err != nil {

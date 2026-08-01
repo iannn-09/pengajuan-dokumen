@@ -48,6 +48,7 @@ func (pc *ProjectController) CreateProject(c *gin.Context) {
 		Title:          dto.Title,
 		Description:    dto.Description,
 		CompanyName:    dto.CompanyName,
+		Unit:           dto.Unit,
 		DocumentTypeID: dto.DocumentTypeID,
 		UserID:         userID,
 		Status:         models.StatusDraft,
@@ -94,10 +95,10 @@ func (pc *ProjectController) GetMyProjects(c *gin.Context) {
 		query = query.Where("status = ?", status)
 	}
 
-	// Search by title or project_number
+	// Search by title or project_number or unit
 	if search := c.Query("search"); search != "" {
 		searchTerm := "%" + search + "%"
-		query = query.Where("(title ILIKE ? OR project_number ILIKE ? OR company_name ILIKE ?)", searchTerm, searchTerm, searchTerm)
+		query = query.Where("(title ILIKE ? OR project_number ILIKE ? OR company_name ILIKE ? OR unit ILIKE ?)", searchTerm, searchTerm, searchTerm, searchTerm)
 	}
 
 	query.Count(&total)
@@ -199,6 +200,7 @@ func (pc *ProjectController) UpdateProject(c *gin.Context) {
 	project.Title = dto.Title
 	project.Description = dto.Description
 	project.CompanyName = dto.CompanyName
+	project.Unit = dto.Unit
 	project.DocumentTypeID = dto.DocumentTypeID
 
 	if err := config.DB.Save(&project).Error; err != nil {

@@ -39,9 +39,6 @@ func getJWTSecret() []byte {
 		return jwtSecret
 	}
 
-	// Generate ephemeral secret for development only
-	// TODO(security): In production, JWT_SECRET MUST be set via environment variable or secret manager.
-	// An ephemeral secret means tokens are invalidated on every restart and cannot be shared across instances.
 	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
 		log.Fatalf("Failed to generate ephemeral JWT secret: %v", err)
@@ -72,7 +69,6 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 // ParseToken validates and parses a JWT token string
 func ParseToken(tokenString string) (*JWTClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Validate signing algorithm to prevent algorithm confusion attacks
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -90,26 +86,30 @@ func ParseToken(tokenString string) (*JWTClaims, error) {
 	return claims, nil
 }
 
-// JWTAuthMiddleware validates the JWT token from the Authorization header
+// JWTAuthMiddleware validates the JWT token from the Authorization header or query parameter 'token'
 // and sets user context (user_id, email, role) for downstream handlers
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		tokenString := ""
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
+				tokenString = parts[1]
+			}
+		}
+
+		// Fallback to query parameter 'token' if Authorization header is absent (e.g. for browser target="_blank" links)
+		if tokenString == "" {
+			tokenString = c.Query("token")
+		}
+
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header or token query parameter is required"})
 			c.Abort()
 			return
 		}
 
-		// Expect format: "Bearer <token>"
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header must be in format: Bearer <token>"})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
 		claims, err := ParseToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})

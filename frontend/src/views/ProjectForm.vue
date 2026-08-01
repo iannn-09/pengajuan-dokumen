@@ -23,7 +23,8 @@
             <span class="info-code">{{ selectedDocType.code }}</span>
           </div>
           <h4 class="info-title">{{ selectedDocType.name }}</h4>
-          <div v-if="selectedDocType.description" class="info-desc html-content" v-html="selectedDocType.description"></div>
+          <div v-if="selectedDocType.description" class="info-desc html-content" v-html="selectedDocType.description">
+          </div>
           <div class="req-box">
             <strong>📋 Berkas Persyaratan Wajib yang Harus Dilampirkan:</strong>
             <div class="req-text html-content" v-html="selectedDocType.requirement"></div>
@@ -32,34 +33,21 @@
 
         <div class="form-group">
           <label class="form-label">Judul Permohonan Dokumen *</label>
-          <input 
-            v-model="form.title" 
-            type="text" 
-            class="form-input" 
-            placeholder="Contoh: Permohonan Dokumen Kelayakan Lingkungan PT XYZ" 
-            required 
-          />
+          <input v-model="form.title" type="text" class="form-input"
+            placeholder="Contoh: Permohonan Dokumen Kelayakan Lingkungan PT XYZ" required />
         </div>
 
         <div class="form-group">
           <label class="form-label">Nama Perusahaan / Pemohon *</label>
-          <input 
-            v-model="form.company_name" 
-            type="text" 
-            class="form-input" 
-            placeholder="Nama Resmi PT / CV / Instansi" 
-            required 
-          />
+          <input v-model="form.company_name" type="text" class="form-input" placeholder="Nama Resmi PT / CV / Instansi"
+            required />
         </div>
 
         <div class="form-group">
           <label class="form-label">Deskripsi Permohonan & Detail Kelayakan</label>
-          <textarea 
-            v-model="form.description" 
-            class="form-textarea" 
+          <textarea v-model="form.description" class="form-textarea"
             placeholder="Jelaskan ruang lingkup, lokasi, dan latar belakang pengajuan permohonan dokumen kelayakan..."
-            rows="4"
-          ></textarea>
+            rows="4"></textarea>
         </div>
 
         <div class="form-actions">
@@ -78,13 +66,8 @@
 
       <!-- Upload Form -->
       <div class="file-uploader">
-        <input 
-          type="file" 
-          ref="fileInput" 
-          class="file-input-hidden" 
-          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
-          @change="handleFileUpload" 
-        />
+        <input type="file" ref="fileInput" class="file-input-hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+          @change="handleFileUpload" />
         <div class="upload-dropzone" @click="$refs.fileInput.click()">
           <span class="upload-icon">📁</span>
           <span class="upload-text">Klik di sini untuk memilih dan mengunggah dokumen</span>
@@ -100,8 +83,8 @@
             <span class="file-size">{{ formatSize(doc.file_size) }}</span>
           </div>
           <div class="file-actions">
-            <a :href="getDownloadUrl(doc.id)" target="_blank" class="btn btn-secondary btn-sm">Download</a>
-            <button class="btn btn-danger btn-sm" @click="deleteDoc(doc.id)">Hapus</button>
+            <a :href="getDownloadUrl(doc.id)" target="_blank" class="btn btn-secondary btn-sm">Lihat</a>
+            <button type="button" class="btn btn-danger btn-sm" @click="deleteDoc(doc.id)">Hapus</button>
           </div>
         </div>
       </div>
@@ -112,11 +95,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import apiClient from '../services/api'
 import { alertSuccess, alertError, alertWarning, confirmDialog } from '../utils/swal'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 const isEdit = computed(() => !!route.params.id)
 const project = ref(null)
@@ -226,7 +211,7 @@ const deleteDoc = async (docId) => {
 }
 
 const getDownloadUrl = (docId) => {
-  return `${apiClient.defaults.baseURL}/documents/${docId}/download`
+  return `${apiClient.defaults.baseURL}/documents/${docId}/download?token=${auth.token}`
 }
 
 const formatSize = (bytes) => {
@@ -264,7 +249,8 @@ onMounted(async () => {
   color: var(--text-main);
 }
 
-.form-card, .upload-card {
+.form-card,
+.upload-card {
   padding: 1.75rem;
 }
 
@@ -319,8 +305,15 @@ onMounted(async () => {
   border-radius: var(--radius-sm);
 }
 
-.html-content :deep(p) { margin-bottom: 0.35rem; }
-.html-content :deep(ul), .html-content :deep(ol) { padding-left: 1.2rem; margin-bottom: 0.35rem; }
+.html-content :deep(p) {
+  margin-bottom: 0.35rem;
+}
+
+.html-content :deep(ul),
+.html-content :deep(ol) {
+  padding-left: 1.2rem;
+  margin-bottom: 0.35rem;
+}
 
 .form-actions {
   display: flex;
@@ -341,7 +334,9 @@ onMounted(async () => {
   margin-bottom: 1.25rem;
 }
 
-.file-input-hidden { display: none; }
+.file-input-hidden {
+  display: none;
+}
 
 .upload-dropzone {
   border: 2px dashed var(--border-color);
@@ -362,9 +357,20 @@ onMounted(async () => {
   background: rgba(99, 102, 241, 0.05);
 }
 
-.upload-icon { font-size: 2rem; }
-.upload-text { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
-.upload-hint { color: var(--text-subtle); font-size: 0.78rem; }
+.upload-icon {
+  font-size: 2rem;
+}
+
+.upload-text {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.upload-hint {
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+}
 
 .file-list {
   margin-top: 1.25rem;

@@ -17,6 +17,8 @@
           <span>&bull;</span>
           <span>Perusahaan: <strong>{{ project.company_name || '-' }}</strong></span>
           <span>&bull;</span>
+          <span v-if="project.unit">Unit Kerja: <strong>{{ project.unit }}</strong></span>
+          <span v-if="project.unit">&bull;</span>
           <span>Tanggal Submit: <strong>{{ formatDate(project.submitted_at || project.created_at) }}</strong></span>
         </div>
       </div>
@@ -31,10 +33,16 @@
 
         <!-- Document Type Info -->
         <div v-if="project.document_type" class="doc-type-box">
-          <h4 class="doc-type-title">Jenis Dokumen: {{ project.document_type.name }} ({{ project.document_type.code }})</h4>
+          <div class="doc-type-header">
+            <h4 class="doc-type-title">Jenis Dokumen: {{ project.document_type.name }}</h4>
+            <span class="doc-type-code">{{ project.document_type.code }}</span>
+          </div>
+          <div v-if="project.document_type.description" class="doc-type-desc html-content"
+            v-html="project.document_type.description"></div>
+
           <div v-if="project.document_type.requirement" class="req-box">
-            <strong>Persyaratan Berkas Wajib:</strong>
-            <div class="html-content" v-html="project.document_type.requirement"></div>
+            <strong class="req-title">📋 Berkas Persyaratan Wajib:</strong>
+            <div class="req-text html-content" v-html="project.document_type.requirement"></div>
           </div>
         </div>
 
@@ -46,7 +54,9 @@
               <span class="doc-name">{{ doc.file_name }}</span>
               <small class="doc-sub">{{ doc.file_type?.toUpperCase() }} &bull; {{ formatSize(doc.file_size) }}</small>
             </div>
-            <a :href="getDownloadUrl(doc.id)" target="_blank" class="btn btn-primary btn-sm">Download File</a>
+            <div class="doc-actions">
+              <a :href="getDownloadUrl(doc.id)" target="_blank" class="btn btn-primary btn-sm">Lihat</a>
+            </div>
           </div>
         </div>
 
@@ -84,13 +94,9 @@
 
           <div class="form-group">
             <label class="form-label">Catatan Penilai / Evaluasi *</label>
-            <textarea 
-              v-model="notes" 
-              class="form-textarea" 
+            <textarea v-model="notes" class="form-textarea"
               placeholder="Tuliskan alasan persetujuan, daftar dokumen yang perlu direvisi, atau alasan penolakan..."
-              rows="6"
-              :required="action !== 'approve'"
-            ></textarea>
+              rows="6" :required="action !== 'approve'"></textarea>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
@@ -105,6 +111,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import apiClient from '../services/api'
 import StatusBadge from '../components/StatusBadge.vue'
 import ReviewTimeline from '../components/ReviewTimeline.vue'
@@ -112,6 +119,7 @@ import { alertSuccess, alertError, alertWarning, confirmDialog } from '../utils/
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 const loading = ref(true)
 const submitting = ref(false)
@@ -167,7 +175,7 @@ const handleAssess = async () => {
 }
 
 const getDownloadUrl = (docId) => {
-  return `${apiClient.defaults.baseURL}/documents/${docId}/download`
+  return `${apiClient.defaults.baseURL}/documents/${docId}/download?token=${auth.token}`
 }
 
 const formatDate = (dateStr) => {
@@ -196,7 +204,8 @@ onMounted(() => {
   gap: 1.5rem;
 }
 
-.loading-box, .empty-box {
+.loading-box,
+.empty-box {
   padding: 4rem;
   text-align: center;
   color: var(--text-muted);
@@ -231,6 +240,7 @@ onMounted(() => {
 
 .project-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -243,11 +253,13 @@ onMounted(() => {
   gap: 1.5rem;
 }
 
-.detail-card, .assessment-panel {
+.detail-card,
+.assessment-panel {
   padding: 1.5rem;
 }
 
-.section-title, .panel-title {
+.section-title,
+.panel-title {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-main);
@@ -275,23 +287,78 @@ onMounted(() => {
 }
 
 .doc-type-box {
-  margin-top: 1rem;
-  padding: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
   background: rgba(99, 102, 241, 0.08);
   border: 1px solid rgba(99, 102, 241, 0.3);
   border-radius: var(--radius-md);
 }
 
+.doc-type-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
 .doc-type-title {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 800;
   color: var(--text-main);
 }
 
-.req-box {
-  margin-top: 0.5rem;
-  font-size: 0.83rem;
+.doc-type-code {
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.15);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.doc-type-desc {
+  font-size: 0.85rem;
   color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.req-box {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(99, 102, 241, 0.3);
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+
+.req-title {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.req-text {
+  margin-top: 0.35rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.html-content :deep(p) {
+  margin-bottom: 0.35rem;
+}
+
+.html-content :deep(ul),
+.html-content :deep(ol) {
+  padding-left: 1.5rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.html-content :deep(li) {
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .doc-list {
@@ -327,6 +394,11 @@ onMounted(() => {
   color: var(--text-subtle);
 }
 
+.doc-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
 .empty-text {
   font-size: 0.85rem;
   color: var(--text-subtle);
@@ -353,7 +425,9 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.action-option input { display: none; }
+.action-option input {
+  display: none;
+}
 
 .option-approve.selected {
   background: rgba(16, 185, 129, 0.15);
@@ -386,6 +460,8 @@ onMounted(() => {
 }
 
 @media (max-width: 1024px) {
-  .grid-2col { grid-template-columns: 1fr; }
+  .grid-2col {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

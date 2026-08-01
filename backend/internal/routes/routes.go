@@ -18,6 +18,11 @@ func SetupRouter() *gin.Engine {
 	// Set max multipart memory for file uploads (10 MB)
 	r.MaxMultipartMemory = 10 << 20
 
+	// Serve uploaded files statically for direct viewing
+	r.Static("/uploads", "./uploads")
+	r.Static("/storage/uploads", "./uploads")
+	r.Static("/storage/upload", "./uploads")
+
 	// CORS Configuration
 	allowOrigin := os.Getenv("CORS_ALLOW_ORIGIN")
 	if allowOrigin == "" {
@@ -107,7 +112,7 @@ func SetupRouter() *gin.Engine {
 				reviewGroup.GET("/all-history", reviewController.GetAllReviewHistory)
 			}
 
-			// ─── Document Download (All Roles) ────────────────────
+			// ─── Document Download / View (All Roles) ─────────────
 			docUploadController := controllers.NewDocumentUploadController()
 			protected.GET("/documents/:id/download", docUploadController.DownloadDocument)
 
