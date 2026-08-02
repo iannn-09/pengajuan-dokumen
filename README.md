@@ -15,7 +15,7 @@ Proyek ini dirancang untuk menangani ribuan hingga ratusan ribu data permohonan 
   - Mengunggah dokumen lampiran (PDF, PNG, JPG, DOCX) dengan penamaan aman berformat UUID v4 dan validasi ukuran file max 10MB.
   - Mengirim permohonan untuk verifikasi penilaian.
   - Memantau status permohonan real-time (`DRAFT`, `SUBMITTED`, `UNDER_REVIEW`, `REVISION`, `APPROVED`, `REJECTED`) serta membaca catatan revisi dari penilai.
-- **Role Penilai / Verifikator**:
+- **Role Penilai**:
   - Peninjauan antrean permohonan masuk (`SUBMITTED`, `UNDER_REVIEW`).
   - Mengunduh & memverifikasi dokumen lampiran pemohon.
   - Mengambil keputusan penilaian: **Setujui (APPROVED)**, **Minta Revisi (REVISION)**, atau **Tolak (REJECTED)** disertai catatan evaluasi.
@@ -200,8 +200,8 @@ Setelah menjalankan perintah **Data Seeder** di atas, Anda dapat langsung login 
 | **Administrator** | `admin@kelayakan.id` | `password123` | Akses Penuh Sistem & Management User |
 | **Pemohon Dokumen** | `pemohon1@kelayakan.id` | `password123` | Buat & Kelola Permohonan Dokumen |
 | **Pemohon Dokumen** | `pemohon2@kelayakan.id` | `password123` | Buat & Kelola Permohonan Dokumen |
-| **Penilai / Verifikator** | `penilai1@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
-| **Penilai / Verifikator** | `penilai2@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
+| **Penilai** | `penilai1@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
+| **Penilai** | `penilai2@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
 
 ---
 

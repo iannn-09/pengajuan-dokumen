@@ -175,7 +175,7 @@ const getAvatarUrl = (path) => {
 
 const getRoleLabel = (role) => {
   if (role === 'admin') return 'Administrator'
-  if (role === 'penilai') return 'Penilai / Verifikator'
+  if (role === 'penilai') return 'Penilai'
   return 'Pemohon Dokumen'
 }
 </script>

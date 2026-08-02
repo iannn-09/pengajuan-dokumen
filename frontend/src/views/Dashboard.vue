@@ -7,12 +7,8 @@
         <p>{{ bannerSubtitle }}</p>
       </div>
       <div class="banner-actions">
-        <button 
-          class="btn btn-secondary" 
-          @click="handleExportRekapan" 
-          :disabled="exporting" 
-          title="Unduh Rekapan Laporan Format Excel (CSV)"
-        >
+        <button class="btn btn-secondary" @click="handleExportRekapan" :disabled="exporting"
+          title="Unduh Rekapan Laporan Format Excel (CSV)">
           <span>{{ exporting ? 'Mengunduh...' : '📥 Export Rekapan Laporan' }}</span>
         </button>
 
@@ -117,7 +113,8 @@
     <!-- Spacious Full-Width Analytics Chart Card -->
     <div class="glass-card chart-card">
       <div class="chart-header">
-        <h3 class="card-title">{{ auth.isPemohon ? 'Grafik Trend Pengajuan Bulanan' : 'Distribusi Status & Progres Permohonan' }}</h3>
+        <h3 class="card-title">{{ auth.isPemohon ? 'Grafik Trend Pengajuan Bulanan' : 'Distribusi Status & Progres
+          Permohonan' }}</h3>
         <small class="text-muted">Visualisasi data statistik real-time permohonan dokumen kelayakan.</small>
       </div>
       <div class="chart-container">
@@ -138,15 +135,15 @@ import apiClient from '../services/api'
 import { exportToCSV, formatDateCsv } from '../utils/exportCsv'
 import { alertSuccess, alertError } from '../utils/swal'
 
-import { 
-  Chart as ChartJS, 
-  Title, 
-  Tooltip, 
-  Legend, 
-  ArcElement, 
-  BarElement, 
-  CategoryScale, 
-  LinearScale 
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale
 } from 'chart.js'
 import { Doughnut, Bar } from 'vue-chartjs'
 
@@ -178,7 +175,7 @@ const chartData = reactive({
 // Banner Computed Properties
 const bannerTitle = computed(() => {
   if (auth.isAdmin) return 'Dashboard Executive Administrator 👑'
-  if (auth.isPenilai) return 'Dashboard Penilai / Verifikator 📋'
+  if (auth.isPenilai) return 'Dashboard Penilai 📋'
   return `Selamat Datang, ${auth.userName} 👋`
 })
 
@@ -262,7 +259,7 @@ const handleExportRekapan = async () => {
       const res = await apiClient.get('/reviews/all-history?per_page=1000')
       const histories = res.data?.data || []
       const rows = [
-        ['No', 'Tanggal Verifikasi', 'No. Project', 'Judul Permohonan', 'Pemohon', 'Perusahaan / Instansi', 'Penilai / Verifikator', 'Status Keputusan', 'Catatan Evaluasi']
+        ['No', 'Tanggal Verifikasi', 'No. Project', 'Judul Permohonan', 'Pemohon', 'Perusahaan / Instansi', 'Penilai', 'Status Keputusan', 'Catatan Evaluasi']
       ]
       histories.forEach((item, index) => {
         rows.push([
@@ -389,19 +386,44 @@ onMounted(() => {
 .stat-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: 4px;
   border-radius: 4px 0 0 4px;
 }
 
-.border-total::before { background: #6366f1; }
-.border-users::before { background: #c084fc; }
-.border-draft::before { background: #94a3b8; }
-.border-myreviews::before { background: #818cf8; }
-.border-pending::before { background: #f59e0b; }
-.border-revision::before { background: #fbbf24; }
-.border-approved::before { background: #10b981; }
-.border-rejected::before { background: #f43f5e; }
+.border-total::before {
+  background: #6366f1;
+}
+
+.border-users::before {
+  background: #c084fc;
+}
+
+.border-draft::before {
+  background: #94a3b8;
+}
+
+.border-myreviews::before {
+  background: #818cf8;
+}
+
+.border-pending::before {
+  background: #f59e0b;
+}
+
+.border-revision::before {
+  background: #fbbf24;
+}
+
+.border-approved::before {
+  background: #10b981;
+}
+
+.border-rejected::before {
+  background: #f43f5e;
+}
 
 .stat-label {
   font-size: 0.78rem;
@@ -415,10 +437,21 @@ onMounted(() => {
   color: var(--text-main);
 }
 
-.text-amber { color: #fbbf24; }
-.text-indigo { color: #c084fc; }
-.text-emerald { color: #34d399; }
-.text-rose { color: #fb7185; }
+.text-amber {
+  color: #fbbf24;
+}
+
+.text-indigo {
+  color: #c084fc;
+}
+
+.text-emerald {
+  color: #34d399;
+}
+
+.text-rose {
+  color: #fb7185;
+}
 
 .quick-nav-grid {
   display: grid;
@@ -473,7 +506,9 @@ onMounted(() => {
   color: var(--text-main);
 }
 
-.text-muted { color: var(--text-muted); }
+.text-muted {
+  color: var(--text-muted);
+}
 
 .chart-container {
   height: 260px;
@@ -488,19 +523,44 @@ onMounted(() => {
 }
 
 @media (max-width: 1400px) {
-  .quick-nav-grid { grid-template-columns: repeat(3, 1fr); }
+  .quick-nav-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 1280px) {
-  .stats-grid { grid-template-columns: repeat(3, 1fr); }
-  .quick-nav-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .quick-nav-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
-  .welcome-banner { flex-direction: column; align-items: flex-start; }
-  .banner-actions { width: 100%; flex-direction: column; }
-  .banner-actions button, .banner-actions a { width: 100%; text-align: center; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .quick-nav-grid { grid-template-columns: 1fr; }
+  .welcome-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .banner-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .banner-actions button,
+  .banner-actions a {
+    width: 100%;
+    text-align: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quick-nav-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

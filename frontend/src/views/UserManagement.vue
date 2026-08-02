@@ -3,7 +3,7 @@
     <div class="header-actions">
       <div>
         <h1 class="page-title">Manajemen User & Penilai</h1>
-        <p class="page-subtitle">Kelola daftar akun pengguna, pemohon, serta akun Penilai / Verifikator dalam sistem.</p>
+        <p class="page-subtitle">Kelola daftar akun pengguna, pemohon, serta akun Penilai dalam sistem.</p>
       </div>
       <button v-if="auth.isAdmin" class="btn btn-primary" @click="isCreateModalOpen = true">
         + Buat Akun Penilai / User Baru
@@ -13,20 +13,15 @@
     <!-- Filter & Search Toolbar -->
     <div class="glass-card toolbar-card">
       <div class="search-box">
-        <input 
-          v-model="search" 
-          type="text" 
-          class="form-input" 
-          placeholder="Cari nama, email, atau instansi/perusahaan..." 
-          @input="debouncedFetch"
-        />
+        <input v-model="search" type="text" class="form-input"
+          placeholder="Cari nama, email, atau instansi/perusahaan..." @input="debouncedFetch" />
       </div>
 
       <div class="filter-box">
         <select v-model="roleFilter" class="form-select" @change="fetchUsers">
           <option value="">Semua Role</option>
           <option value="admin">Admin</option>
-          <option value="penilai">Penilai / Verifikator</option>
+          <option value="penilai">Penilai</option>
           <option value="pemohon">Pemohon Dokumen</option>
         </select>
       </div>
@@ -70,12 +65,8 @@
             <td>{{ user.phone || '-' }}</td>
             <td>{{ formatDate(user.created_at) }}</td>
             <td v-if="auth.isAdmin" class="text-right">
-              <button 
-                class="btn btn-danger btn-sm" 
-                :disabled="user.id === auth.user?.id"
-                @click="confirmDelete(user)"
-                title="Hapus User"
-              >
+              <button class="btn btn-danger btn-sm" :disabled="user.id === auth.user?.id" @click="confirmDelete(user)"
+                title="Hapus User">
                 Hapus
               </button>
             </td>
@@ -84,12 +75,7 @@
       </table>
 
       <!-- Pagination -->
-      <Pagination 
-        :page="meta.page" 
-        :total-pages="meta.total_pages" 
-        :total="meta.total" 
-        @change-page="onPageChange"
-      />
+      <Pagination :page="meta.page" :total-pages="meta.total_pages" :total="meta.total" @change-page="onPageChange" />
     </div>
 
     <!-- Create User Modal (Admin only) -->
@@ -105,7 +91,7 @@
             <div class="form-group">
               <label class="form-label">Role / Hak Akses *</label>
               <select v-model="form.role" class="form-select" required>
-                <option value="penilai">Penilai / Verifikator Dokumen</option>
+                <option value="penilai">Penilai Dokumen</option>
                 <option value="pemohon">Pemohon Dokumen</option>
                 <option value="admin">Administrator</option>
               </select>
@@ -113,36 +99,18 @@
 
             <div class="form-group">
               <label class="form-label">Nama Lengkap *</label>
-              <input 
-                v-model="form.name" 
-                type="text" 
-                class="form-input" 
-                placeholder="Nama Pengguna" 
-                required 
-              />
+              <input v-model="form.name" type="text" class="form-input" placeholder="Nama Pengguna" required />
             </div>
 
             <div class="form-group">
               <label class="form-label">Email Login *</label>
-              <input 
-                v-model="form.email" 
-                type="email" 
-                class="form-input" 
-                placeholder="email@kelayakan.id" 
-                required 
-              />
+              <input v-model="form.email" type="email" class="form-input" placeholder="email@kelayakan.id" required />
             </div>
 
             <div class="form-group">
               <label class="form-label">Password * (Min 8 Karakter)</label>
-              <input 
-                v-model="form.password" 
-                type="password" 
-                class="form-input" 
-                placeholder="••••••••" 
-                required 
-                minlength="8"
-              />
+              <input v-model="form.password" type="password" class="form-input" placeholder="••••••••" required
+                minlength="8" />
             </div>
 
             <div class="form-row">
@@ -152,7 +120,8 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Instansi / Departemen</label>
-                <input v-model="form.company" type="text" class="form-input" placeholder="Contoh: Dinas Lingkungan Hidup" />
+                <input v-model="form.company" type="text" class="form-input"
+                  placeholder="Contoh: Dinas Lingkungan Hidup" />
               </div>
             </div>
           </div>
@@ -277,7 +246,7 @@ const confirmDelete = async (user) => {
 
 const getRoleText = (role) => {
   if (role === 'admin') return 'Admin'
-  if (role === 'penilai') return 'Penilai / Verifikator'
+  if (role === 'penilai') return 'Penilai'
   return 'Pemohon'
 }
 
@@ -321,10 +290,16 @@ onMounted(() => fetchUsers())
   gap: 1rem;
 }
 
-.search-box { flex: 1; }
-.filter-box select { min-width: 180px; }
+.search-box {
+  flex: 1;
+}
 
-.loading-box, .empty-card {
+.filter-box select {
+  min-width: 180px;
+}
+
+.loading-box,
+.empty-card {
   padding: 4rem;
   text-align: center;
   color: var(--text-muted);
@@ -359,13 +334,34 @@ onMounted(() => fetchUsers())
   vertical-align: middle;
 }
 
-.font-mono { font-family: monospace; font-size: 0.85rem; }
-.font-bold { font-weight: 700; }
-.text-accent { color: var(--accent-primary); }
-.text-muted { color: var(--text-muted); }
-.text-center { text-align: center; }
-.text-right { text-align: right; }
-.w-12 { width: 3rem; }
+.font-mono {
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.w-12 {
+  width: 3rem;
+}
 
 .role-badge {
   padding: 0.25rem 0.65rem;
@@ -373,9 +369,24 @@ onMounted(() => fetchUsers())
   font-size: 0.78rem;
   font-weight: 600;
 }
-.badge-admin { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
-.badge-penilai { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.badge-pemohon { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+.badge-admin {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-penilai {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-pemohon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
 
 /* Modal */
 .btn-close {

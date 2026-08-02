@@ -9,35 +9,21 @@
       <!-- Left Column: User Summary Card -->
       <div class="glass-card summary-card">
         <div class="avatar-box">
-          <img 
-            v-if="auth.user?.avatar" 
-            :src="getAvatarUrl(auth.user.avatar)" 
-            :alt="auth.userName" 
-            class="avatar-large-img" 
-          />
+          <img v-if="auth.user?.avatar" :src="getAvatarUrl(auth.user.avatar)" :alt="auth.userName"
+            class="avatar-large-img" />
           <div v-else class="avatar-large">
             {{ (form.name || auth.userName || 'U').charAt(0).toUpperCase() }}
           </div>
 
-          <button 
-            type="button" 
-            class="avatar-upload-btn" 
-            @click="$refs.avatarInput.click()" 
-            :disabled="uploadingAvatar"
-            title="Klik untuk ubah foto profil"
-          >
+          <button type="button" class="avatar-upload-btn" @click="$refs.avatarInput.click()" :disabled="uploadingAvatar"
+            title="Klik untuk ubah foto profil">
             <span v-if="uploadingAvatar">...</span>
             <span v-else>📷</span>
           </button>
 
-          <input 
-            type="file" 
-            ref="avatarInput" 
-            class="hidden-input" 
-            accept="image/png, image/jpeg, image/jpg, image/webp" 
-            @change="handleAvatarUpload" 
-          />
-          
+          <input type="file" ref="avatarInput" class="hidden-input"
+            accept="image/png, image/jpeg, image/jpg, image/webp" @change="handleAvatarUpload" />
+
           <span class="role-badge" :class="auth.userRole">{{ getRoleLabel(auth.userRole) }}</span>
         </div>
 
@@ -67,45 +53,25 @@
         <form @submit.prevent="handleSaveProfile" class="profile-form">
           <div class="form-group">
             <label class="form-label">Nama Lengkap *</label>
-            <input 
-              v-model="form.name" 
-              type="text" 
-              class="form-input" 
-              placeholder="Masukkan nama lengkap Anda..." 
-              required 
-            />
+            <input v-model="form.name" type="text" class="form-input" placeholder="Masukkan nama lengkap Anda..."
+              required />
           </div>
 
           <div class="form-group">
             <label class="form-label">Alamat Email (Otomatis)</label>
-            <input 
-              :value="auth.user?.email" 
-              type="email" 
-              class="form-input form-disabled" 
-              disabled 
-            />
+            <input :value="auth.user?.email" type="email" class="form-input form-disabled" disabled />
             <small class="form-hint">🔒 Email digunakan sebagai ID login utama dan tidak dapat diubah.</small>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">No. Telepon / HP</label>
-              <input 
-                v-model="form.phone" 
-                type="text" 
-                class="form-input" 
-                placeholder="Contoh: 081234567890" 
-              />
+              <input v-model="form.phone" type="text" class="form-input" placeholder="Contoh: 081234567890" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Nama Perusahaan / Instansi</label>
-              <input 
-                v-model="form.company" 
-                type="text" 
-                class="form-input" 
-                placeholder="Contoh: PT Medika Utama" 
-              />
+              <input v-model="form.company" type="text" class="form-input" placeholder="Contoh: PT Medika Utama" />
               <small class="form-hint">Otomatis terisi saat Anda membuat permohonan baru.</small>
             </div>
           </div>
@@ -114,13 +80,8 @@
 
           <div class="form-group">
             <label class="form-label">Kata Sandi Baru (Opsional)</label>
-            <input 
-              v-model="form.password" 
-              type="password" 
-              class="form-input" 
-              placeholder="Kosongkan jika tidak ingin mengubah kata sandi..." 
-              minlength="6"
-            />
+            <input v-model="form.password" type="password" class="form-input"
+              placeholder="Kosongkan jika tidak ingin mengubah kata sandi..." minlength="6" />
             <small class="form-hint">Minimal 6 karakter. Biarkan kosong untuk tetap menggunakan kata sandi lama.</small>
           </div>
 
@@ -219,7 +180,7 @@ const getAvatarUrl = (path) => {
 
 const getRoleLabel = (role) => {
   if (role === 'admin') return 'Administrator'
-  if (role === 'penilai') return 'Penilai / Verifikator'
+  if (role === 'penilai') return 'Penilai'
   return 'Pemohon Dokumen'
 }
 
@@ -336,9 +297,17 @@ onMounted(async () => {
   color: white;
 }
 
-.role-badge.admin { background: #ef4444; }
-.role-badge.penilai { background: #f59e0b; }
-.role-badge.pemohon { background: #6366f1; }
+.role-badge.admin {
+  background: #ef4444;
+}
+
+.role-badge.penilai {
+  background: #f59e0b;
+}
+
+.role-badge.pemohon {
+  background: #6366f1;
+}
 
 .user-display-name {
   font-size: 1.15rem;
