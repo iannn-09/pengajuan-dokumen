@@ -113,8 +113,7 @@
     <!-- Spacious Full-Width Analytics Chart Card -->
     <div class="glass-card chart-card">
       <div class="chart-header">
-        <h3 class="card-title">{{ auth.isPemohon ? 'Grafik Trend Pengajuan Bulanan' : 'Distribusi Status & Progres
-          Permohonan' }}</h3>
+        <h3 class="card-title">{{ auth.isPemohon ? 'Grafik Trend Pengajuan Bulanan' : 'Distribusi Status & Progres Permohonan' }}</h3>
         <small class="text-muted">Visualisasi data statistik real-time permohonan dokumen kelayakan.</small>
       </div>
       <div class="chart-container">
