@@ -11,6 +11,7 @@ import (
 	"pengajuan-dokumen/backend/internal/config"
 	"pengajuan-dokumen/backend/internal/middleware"
 	"pengajuan-dokumen/backend/internal/models"
+	"pengajuan-dokumen/backend/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -254,6 +255,22 @@ func (pc *ProjectController) SubmitProject(c *gin.Context) {
 	if err := config.DB.Save(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to submit project"})
 		return
+	}
+
+	// Trigger WhatsApp notification confirming submission to Pemohon asynchronously
+	var pemohonUser models.User
+	if err := config.DB.First(&pemohonUser, project.UserID).Error; err == nil {
+		services.SendStatusChangeNotification(
+			pemohonUser.Name,
+			pemohonUser.Phone,
+			project.ProjectNumber,
+			project.Title,
+			project.CompanyName,
+			"Sistem (Antrean Verifikasi)",
+			models.StatusDraft,
+			models.StatusSubmitted,
+			"Permohonan Anda berhasil dikirim ke sistem dan sedang masuk antrean verifikasi Penilai.",
+		)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

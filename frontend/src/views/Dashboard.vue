@@ -77,7 +77,7 @@
         <div class="nav-card-icon">📄</div>
         <div>
           <h4>Master Jenis Dokumen</h4>
-          <p>Kelola jenis dokumen & persyaratan berkas wajib</p>
+          <p>Kelola jenis dokumen & berkas wajib</p>
         </div>
       </router-link>
 
@@ -93,7 +93,7 @@
         <div class="nav-card-icon">⚖️</div>
         <div>
           <h4>Penilaian Project</h4>
-          <p>Monitor & evaluasi antrean permohonan masuk</p>
+          <p>Monitor & evaluasi antrean permohonan</p>
         </div>
       </router-link>
 
@@ -102,6 +102,14 @@
         <div>
           <h4>Riwayat Audit & Log</h4>
           <p>Audit trail seluruh keputusan verifikator</p>
+        </div>
+      </router-link>
+
+      <router-link to="/whatsapp-settings" class="glass-card nav-card">
+        <div class="nav-card-icon">📱</div>
+        <div>
+          <h4>Gateway WhatsApp</h4>
+          <p>Sesi login WA Admin & kirim pesan uji coba</p>
         </div>
       </router-link>
     </div>
@@ -414,7 +422,7 @@ onMounted(() => {
 
 .quick-nav-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
 }
 
@@ -477,6 +485,10 @@ onMounted(() => {
   text-align: center;
   color: var(--text-subtle);
   font-size: 0.9rem;
+}
+
+@media (max-width: 1400px) {
+  .quick-nav-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 1280px) {

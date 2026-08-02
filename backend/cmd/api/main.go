@@ -8,6 +8,7 @@ import (
 	"pengajuan-dokumen/backend/internal/config"
 	"pengajuan-dokumen/backend/internal/models"
 	"pengajuan-dokumen/backend/internal/routes"
+	"pengajuan-dokumen/backend/internal/services"
 )
 
 func main() {
@@ -30,15 +31,18 @@ func main() {
 	}
 	log.Println("Database migration completed successfully.")
 
-	// 3. Create uploads directory for file storage
+	// 3. Initialize WhatsApp Native Whatsmeow Service
+	services.InitWhatsAppService()
+
+	// 4. Create uploads directory for file storage
 	if err := os.MkdirAll("uploads", 0750); err != nil {
 		log.Printf("Warning: Failed to create uploads directory: %v", err)
 	}
 
-	// 4. Setup Gin Router
+	// 5. Setup Gin Router
 	r := routes.SetupRouter()
 
-	// 5. Start Server
+	// 6. Start Server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

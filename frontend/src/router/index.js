@@ -85,6 +85,12 @@ const routes = [
     component: () => import('../views/ReviewHistory.vue'),
     meta: { requiresAuth: true, allowedRoles: ['penilai', 'admin'] }
   },
+  {
+    path: '/whatsapp-settings',
+    name: 'WhatsAppSettings',
+    component: () => import('../views/WhatsAppSettings.vue'),
+    meta: { requiresAuth: true, allowedRoles: ['admin'] }
+  },
 ]
 
 const router = createRouter({

@@ -8,6 +8,7 @@ import (
 	"pengajuan-dokumen/backend/internal/config"
 	"pengajuan-dokumen/backend/internal/middleware"
 	"pengajuan-dokumen/backend/internal/models"
+	"pengajuan-dokumen/backend/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -187,6 +188,25 @@ func (rc *ReviewController) AssessProject(c *gin.Context) {
 
 	// Reload with reviewer relation
 	config.DB.Preload("Reviewer").First(&reviewHistory, reviewHistory.ID)
+
+	// Trigger WhatsApp notification for Pemohon asynchronously
+	var reviewerUser models.User
+	config.DB.First(&reviewerUser, reviewerID)
+
+	var pemohonUser models.User
+	if err := config.DB.First(&pemohonUser, project.UserID).Error; err == nil {
+		services.SendStatusChangeNotification(
+			pemohonUser.Name,
+			pemohonUser.Phone,
+			project.ProjectNumber,
+			project.Title,
+			project.CompanyName,
+			reviewerUser.Name,
+			statusFrom,
+			statusTo,
+			dto.Notes,
+		)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "success",
