@@ -155,7 +155,7 @@ WHATSAPP_SENDER_NAME="${APP_NAME}"
 WHATSAPP_BOT_URL=http://127.0.0.1:5173
 WHATSAPP_BOT_SECRET=8f4d2a9c1b7e6f0a3d8c5e9b2f1a7c4d6e8f9a0b3c5d7e1f2a4b6c8d9e0f1a3
 
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=AQ.Ab8RN6IGG118QrDccf54sCengB-NHtGMRSu6zVUqFEpk2KeGuw
 ```
 
 Selanjutnya, install dependensi dan jalankan server backend:
