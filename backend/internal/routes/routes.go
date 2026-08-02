@@ -73,6 +73,10 @@ func SetupRouter() *gin.Engine {
 			protected.PUT("/auth/profile", userController.UpdateProfile)
 			protected.POST("/auth/avatar", userController.UploadAvatar)
 
+			// ─── AI Assistant (All Authenticated Users) ───────────
+			aiController := controllers.NewAIController()
+			protected.POST("/ai/chat", aiController.Chat)
+
 			// ─── Master Document Types (Admin Only CRUD) ───────────
 			adminDocTypeGroup := protected.Group("/document-types")
 			adminDocTypeGroup.Use(middleware.RoleMiddleware("admin"))
@@ -136,6 +140,16 @@ func SetupRouter() *gin.Engine {
 			{
 				adminUserGroup.POST("", userController.CreateUser)
 				adminUserGroup.DELETE("/:id", userController.DeleteUser)
+			}
+
+			// ─── WhatsApp Gateway Management (Admin Only) ────────
+			waGroup := protected.Group("/whatsapp")
+			waGroup.Use(middleware.RoleMiddleware("admin"))
+			{
+				waController := controllers.NewWhatsAppController()
+				waGroup.GET("/status", waController.GetStatus)
+				waGroup.POST("/disconnect", waController.DisconnectSession)
+				waGroup.POST("/test", waController.SendTestMessage)
 			}
 		}
 	}

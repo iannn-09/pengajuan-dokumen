@@ -36,6 +36,9 @@
         :is-open="isNotificationOpen" 
         @close="isNotificationOpen = false" 
       />
+
+      <!-- Floating AI Assistant Chatbot Widget -->
+      <AIChatWidget />
     </div>
   </div>
 
@@ -51,6 +54,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import Sidebar from './components/Sidebar.vue'
 import NotificationDrawer from './components/NotificationDrawer.vue'
+import AIChatWidget from './components/AIChatWidget.vue'
 import apiClient from './services/api'
 
 const auth = useAuthStore()
@@ -70,6 +74,7 @@ const pageNameMap = {
   ReviewDetail: 'Detail Penilaian',
   ReviewHistory: 'Riwayat Penilaian & Log Audit',
   ProfileView: 'Profil Saya & Pengaturan Akun',
+  WhatsAppSettings: 'Integrasi WhatsApp Gateway Admin',
   Login: 'Login',
   Register: 'Register',
   LandingPage: 'Landing Page'
