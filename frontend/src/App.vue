@@ -13,11 +13,7 @@
           <h2 class="page-heading">{{ currentPageTitle }}</h2>
         </div>
         <div class="topbar-right">
-          <button 
-            class="bell-btn" 
-            @click="isNotificationOpen = true" 
-            title="Buka Notifikasi & Aktivitas Terbaru"
-          >
+          <button class="bell-btn" @click="isNotificationOpen = true" title="Buka Notifikasi & Aktivitas Terbaru">
             <span class="bell-emoji">🔔</span>
             <span class="bell-badge"></span>
           </button>
@@ -32,10 +28,7 @@
       </main>
 
       <!-- Right Notification Drawer Sheet -->
-      <NotificationDrawer 
-        :is-open="isNotificationOpen" 
-        @close="isNotificationOpen = false" 
-      />
+      <NotificationDrawer :is-open="isNotificationOpen" @close="isNotificationOpen = false" />
 
       <!-- Floating AI Assistant Chatbot Widget -->
       <AIChatWidget />

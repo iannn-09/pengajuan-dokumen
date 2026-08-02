@@ -27,7 +27,7 @@ func ConnectDatabase() *gorm.DB {
 	port := getEnv("DB_PORT", "5432")
 	user := getEnv("DB_USER", "postgres")
 	password := getEnv("DB_PASSWORD", "postgrespassword")
-	dbname := getEnv("DB_NAME", "pengajuan_db")
+	dbname := getEnv("DB_NAME", "dokumen")
 	sslmode := getEnv("DB_SSLMODE", "disable")
 
 	dsn := fmt.Sprintf(
@@ -35,7 +35,10 @@ func ConnectDatabase() *gorm.DB {
 		host, user, password, dbname, port, sslmode,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true, // matikan extended protocol / prepared statement cache pgx
+	}), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
