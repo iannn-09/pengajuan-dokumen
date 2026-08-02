@@ -66,7 +66,7 @@ const handleLogin = async () => {
   errorMessage.value = ''
   try {
     await auth.login(email.value, password.value)
-    router.push('/')
+    router.push('/dashboard')
   } catch (err) {
     errorMessage.value = err.response?.data?.error || 'Gagal masuk. Periksa kembali email dan password Anda.'
   } finally {

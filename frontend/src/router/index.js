@@ -106,6 +106,11 @@ router.beforeEach((to, from, next) => {
     return next('/dashboard')
   }
 
+  // Root Landing page ('/') — redirect to dashboard if already logged in
+  if (to.path === '/' && auth.isAuthenticated) {
+    return next('/dashboard')
+  }
+
   // Role-based guard
   if (to.meta.allowedRoles && !to.meta.allowedRoles.includes(auth.userRole)) {
     return next('/dashboard')
