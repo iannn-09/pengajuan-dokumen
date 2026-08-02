@@ -14,7 +14,7 @@ FROM nginx:stable-alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Custom Nginx config to support Vue Router HTML5 history mode
+# Custom Nginx config to support Vue Router history mode
 RUN echo $'server {\n\
     listen 80;\n\
     location / {\n\

@@ -1,16 +1,18 @@
 version: '3.8'
 
 services:
+  # ─── 1. PostgreSQL Database Service ────────────────────────────────────────
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: pengajuan_postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: dokumen
+      TZ: Asia/Jakarta
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,12 +21,15 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── 2. Go API Backend Service ──────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: pengajuan_backend
     restart: always
+    ports:
+      - "8080:8080"
     environment:
       PORT: 8080
       DB_HOST: postgres
@@ -33,14 +38,18 @@ services:
       DB_PASSWORD: postgrespassword
       DB_NAME: dokumen
       DB_SSLMODE: disable
-      CORS_ALLOW_ORIGIN: http://localhost:5173
-      JWT_SECRET: super-secret-jwt-key-production-change-me
-    ports:
-      - "127.0.0.1:8080:8080"
+      CORS_ALLOW_ORIGIN: "http://localhost:5173"
+      JWT_SECRET: "pengajuan-dokumen-super-secret-key-2026"
+      WHATSAPP_NOTIFIER_ENABLED: "true"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+      TZ: Asia/Jakarta
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
 
+  # ─── 3. Vue 3 Nginx Frontend Service ────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -48,7 +57,7 @@ services:
     container_name: pengajuan_frontend
     restart: always
     ports:
-      - "127.0.0.1:5173:80"
+      - "5173:80"
     depends_on:
       - backend
 
