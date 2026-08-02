@@ -1,41 +1,41 @@
 # Technical Test Programmer — Sistem Pengajuan Dokumen Kelayakan
 
-Aplikasi Full Stack **Sistem Pengajuan Dokumen Kelayakan** berbasis **Go (Gin, GORM, Air)** di sisi Backend, **Vue 3 (Vite, Pinia, Chart.js)** di sisi Frontend, dan **PostgreSQL** sebagai database utama.
+Aplikasi Full Stack **Sistem Pengajuan Dokumen Kelayakan** berbasis **Go (Gin Framework, GORM ORM)** pada bagian Backend API, **Vue 3 (Vite, Pinia, Chart.js)** pada bagian Frontend, serta **PostgreSQL** sebagai sistem manajemen basis data utama.
 
-Proyek ini dibangun untuk menangani ratusan ribu hingga jutaan data permohonan dokumen beserta riwayat audit penilaiannya dengan performa tinggi, keandalan query, serta keamanan sesuai prinsip clean code.
+Proyek ini dirancang untuk menangani ribuan hingga ratusan ribu data permohonan dokumen beserta riwayat audit penilaiannya dengan performa tinggi, validasi keandalan data, serta menerapkan standar keamanan dan *clean code*.
 
 ---
 
-## 🚀 Fitur Utama Sesuai Studi Kasus
+## 🚀 Fitur Utama
 
-### 1. Multi-Role Authentication & Access Control (JWT)
+### 1. Multi-Role Authentication & Access Control (JWT & Bcrypt)
 - **Role Pemohon Dokumen**:
-  - Pendaftaran & Login dengan enkripsi bcrypt.
-  - Membuat & mengelola draft permohonan dokumen.
-  - Unggah dokumen lampiran (PDF, JPG, PNG, DOCX) dengan nama tersimpan UUID & validasi file 10MB.
-  - Mengirim permohonan untuk proses verifikasi penilaian.
-  - Memantau status real-time & riwayat revisi dari penilai.
+  - Registrasi & Login dengan enkripsi password `bcrypt`.
+  - Membuat, mengedit, dan mengelola draft permohonan dokumen.
+  - Mengunggah dokumen lampiran (PDF, PNG, JPG, DOCX) dengan penamaan aman berformat UUID v4 dan validasi ukuran file max 10MB.
+  - Mengirim permohonan untuk verifikasi penilaian.
+  - Memantau status permohonan real-time (`DRAFT`, `SUBMITTED`, `UNDER_REVIEW`, `REVISION`, `APPROVED`, `REJECTED`) serta membaca catatan revisi dari penilai.
 - **Role Penilai / Verifikator**:
   - Peninjauan antrean permohonan masuk (`SUBMITTED`, `UNDER_REVIEW`).
-  - Mengunduh & memverifikasi dokumen lampiran.
+  - Mengunduh & memverifikasi dokumen lampiran pemohon.
   - Mengambil keputusan penilaian: **Setujui (APPROVED)**, **Minta Revisi (REVISION)**, atau **Tolak (REJECTED)** disertai catatan evaluasi.
-  - Log audit & histori penilaian komprehensif.
+  - Riwayat audit (Audit Log) dan histori penilaian yang tersimpan secara kronologis.
 
-### 2. High-Performance Dashboard & Analytics
-- **Chart.js & Vue-ChartJS**: Visualisasi grafis pengajuan bulanan & distribusi status project.
-- Data ringkasan statistik (Total, Draft, Perlu Revisi, Disetujui, Ditolak) secara real-time.
+### 2. High-Performance Dashboard & Visual Analytics
+- Interaktif Chart.js (`Vue-ChartJS`) untuk memvisualisasikan tren pengajuan dokumen bulanan dan distribusi status project permohonan.
+- Ringkasan statistik real-time (Total Project, Draft, Perlu Revisi, Disetujui, Ditolak).
 
-### 3. Big Data Seeding CLI (10.000 Projects + 2.000 Users)
-- Dilengkapi tool seeder CLI berkecepatan tinggi yang mampu mengisi 1.000 Pemohon, 1.000 Penilai, dan 10.000 data Project Permohonan secara batch dalam hitungan detik.
+### 3. High-Speed CLI Data Seeder (10.000 Projects + 2.000 Users)
+- Dilengkapi tool CLI seeder berkecepatan tinggi yang mampu mengisi 1.000 akun Pemohon, 1.000 akun Penilai, dan 10.000 data Project Permohonan secara otomatis hanya dalam hitungan detik.
 
 ---
 
-## 🛠️ Stack Teknologi
+## 🛠️ Stack Teknologi & Dependensi
 
-- **Backend**: Go (Golang 1.21+), Gin Web Framework, GORM ORM, Golang JWT v5, Bcrypt.
-- **Frontend**: Vue 3, Vite, Pinia State Management, Vue Router, Chart.js & Vue-ChartJS, Axios.
-- **Database**: PostgreSQL 15.
-- **DevOps & Testing**: Docker, Docker Compose, Air (Hot Reloading), GitLab CI/CD Pipeline.
+- **Backend**: Go (v1.24+ / v1.25), Gin Web Framework, GORM ORM, Golang-JWT v5, Bcrypt.
+- **Frontend**: Vue 3, Vite, Pinia (State Management), Vue Router, Chart.js, Axios.
+- **Database**: PostgreSQL 15 / 16.
+- **DevOps & Tooling**: Docker, Docker Compose, Air (Hot-Reloading Go).
 
 ---
 
@@ -43,103 +43,127 @@ Proyek ini dibangun untuk menangani ratusan ribu hingga jutaan data permohonan d
 
 ```text
 pengajuan-dokumen/
-├── .gitlab-ci.yml              # GitLab CI/CD Pipeline
-├── docker-compose.yml          # Docker Compose (Postgres, Backend, Frontend)
-├── README.md                   # Dokumentasi Resmi Proyek
+├── go.work                     # Workspace Go Multi-Module (backend & wa-bot)
+├── docker-compose.yml          # Containerization (PostgreSQL, Backend API, Frontend)
+├── README.md                   # Dokumentasi Utama Proyek
 ├── backend/
 │   ├── cmd/
-│   │   ├── api/main.go         # Entry Point Backend API Server
-│   │   └── seed/main.go        # CLI Tool Seeder (10.000 Project + 2.000 User)
+│   │   ├── api/main.go         # Entry Point Server API Backend (Auto Migration)
+│   │   └── seed/main.go        # CLI Tool Data Seeder (10.000 Projects + 2.000 Users)
 │   ├── internal/
-│   │   ├── config/             # DB & Environment Loader
+│   │   ├── config/             # Koneksi Database & Environment Loader
 │   │   ├── controllers/        # REST Controllers (Auth, Project, Review, Upload, Dashboard)
-│   │   ├── middleware/         # JWT Auth & Role-Based Access Middleware
-│   │   ├── models/             # GORM Models (User, Project, Document, ReviewHistory)
-│   │   ├── routes/             # Gin Router Setup & CORS
-│   │   └── seeder/             # Batch Seeder Logic
-│   ├── uploads/                # Directory Penyimpanan File Terisolasi
-│   ├── .env.example
-│   ├── .air.toml
-│   └── Dockerfile
+│   │   ├── middleware/         # JWT Middleware & Role-Based Access Control
+│   │   ├── models/             # Schema Model GORM (User, Project, Document, ReviewHistory)
+│   │   ├── routes/             # Gin Routes & Config CORS
+│   │   └── seeder/             # Logika High-Speed Batch Seeding
+│   ├── uploads/                # Direktori Penyimpanan Berkas Lampiran
+│   ├── .env.example            # Template Konfigurasi Environment Backend
+│   └── Dockerfile              # Dockerfile Multi-Stage Build Backend Go
 └── frontend/
     ├── src/
     │   ├── assets/             # Global CSS & Design System
-    │   ├── components/         # Reusable Components (Sidebar, StatusBadge, Pagination, Timeline)
-    │   ├── router/             # Vue Router dengan Route Guards
-    │   ├── services/           # Axios Client
-    │   ├── stores/             # Pinia Auth Store
-    │   ├── views/              # Pages (Login, Register, Dashboard, Projects, Reviews)
-    │   ├── App.vue
-    │   └── main.js
-    ├── Dockerfile
-    └── package.json
+    │   ├── components/         # Reusable UI (Sidebar, StatusBadge, Pagination, Timeline, Chart)
+    │   ├── router/             # Vue Router & Navigation Guards (Auth/Role Check)
+    │   ├── services/           # Axios HTTP Client
+    │   ├── stores/             # Pinia Store (Authentication & State Management)
+    │   └── views/              # Halaman Aplikasi (Login, Register, Dashboard, Projects, Reviews)
+    ├── Dockerfile              # Dockerfile Nginx Static Build Frontend
+    └── package.json            # NPM Dependencies & Scripts
 ```
 
 ---
 
-## 💻 Cara Menjalankan Proyek
+## 📋 Prasyarat Sistem (Prerequisites)
 
-### Opsi 1: Menggunakan Docker Compose (Direkomendasikan)
-
-Pastikan Docker Desktop aktif di komputer Anda:
-
-```bash
-# 1. Build dan jalankan seluruh container (Postgres, Backend, Frontend)
-docker-compose up --build -d
-
-# 2. Buka aplikasi di browser
-# Frontend : http://localhost:5173
-# Backend  : http://localhost:8080/api/v1/health
-```
+Sebelum menjalankan proyek, pastikan perangkat Anda telah terpasang:
+- **Go**: v1.24 atau v1.25 ([Download Go](https://go.dev/dl/))
+- **Node.js**: v18.x atau v20.x ([Download Node.js](https://nodejs.org/))
+- **PostgreSQL**: v15 atau v16 (jika menjalankan lokal tanpa Docker)
+- **Docker & Docker Compose**: ([Download Docker Desktop](https://www.docker.com/products/docker-desktop/)) *(Opsional jika menggunakan Docker)*
 
 ---
 
-### Opsi 2: Menjalankan Secara Manual (Local Development)
+## 💻 Panduan Menjalankan Proyek
 
-#### 1. Persiapan Database (PostgreSQL)
-Jalankan PostgreSQL lokal atau gunakan container postgres dari Docker:
+Anda dapat memilih salah satu dari 2 opsi cara menjalankan proyek di bawah ini.
+
+### 🌟 OPSI 1: Menjalankan Menggunakan Docker Compose (Sangat Direkomendasikan)
+
+Metode ini paling praktis karena seluruh *environment* (Database PostgreSQL, Backend API, dan Frontend Vue) akan disiapkan dan dihubungkan secara otomatis.
+
+1. **Jalankan Seluruh Container**:
+   Buka terminal di root directory proyek (`pengajuan-dokumen/`):
+   ```bash
+   docker-compose up --build -d
+   ```
+
+2. **Jalankan Data Seeder (10.000 Projects + 2.000 Users)**:
+   Setelah seluruh container berjalan, isi database awal dengan menjalankan perintah berikut di terminal:
+   ```bash
+   docker exec -it pengajuan_backend go run ./cmd/seed/main.go
+   ```
+
+3. **Akses Aplikasi**:
+   - **Frontend App**: [http://localhost:5173](http://localhost:5173)
+   - **Backend API Health Check**: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
+
+---
+
+### 🛠️ OPSI 2: Menjalankan Secara Manual (Local Development)
+
+Jika Anda ingin menjalankan proyek secara lokal untuk kebutuhan pengujian atau pengembangan:
+
+#### 1. Persiapan Database PostgreSQL
+- Buat database baru bernama `dokumen` di PostgreSQL lokal Anda.
+- **Atau** Anda bisa menggunakan container PostgreSQL dari Docker Compose:
+  ```bash
+  docker-compose up -d postgres
+  ```
+
+#### 2. Konfigurasi & Jalankan Backend Go
+Buka terminal pada folder `backend/`:
 ```bash
-docker-compose up -d postgres
+cd backend
+
+# Salin file environment (.env)
+# Windows (PowerShell):
+Copy-Item .env.example .env
+# Linux / macOS:
+cp .env.example .env
 ```
-Pastikan file `backend/.env` telah terkonfigurasi dengan credential database lokal Anda:
+
+Pastikan isi file `backend/.env` sesuai dengan konfigurasi PostgreSQL lokal Anda:
 ```env
 PORT=8080
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=postgres
+DB_PASSWORD=postgrespassword
 DB_NAME=dokumen
 DB_SSLMODE=disable
 CORS_ALLOW_ORIGIN=http://localhost:5173
-JWT_SECRET=super-secret-key-change-in-production
+JWT_SECRET=super-secret-jwt-key-2026
 ```
 
-#### 2. Jalankan Backend Go
-Buka terminal pada folder `backend/`:
+Selanjutnya, install dependensi dan jalankan server backend:
 ```bash
-cd backend
-
-# Download dependensi
+# Download dependensi Go
 go mod tidy
 
-# Jalankan via Air (Hot-Reloading)
-air
-
-# Atau jalankan langsung tanpa Air:
+# Jalankan server backend (Auto Migration akan berjalan otomatis)
 go run ./cmd/api/main.go
 ```
+*(Backend akan berjalan di `http://localhost:8080`)*.
 
-#### 3. Jalankan Seeder Data (10.000 Project + 2.000 User)
-Untuk mengisi database dengan 10.000 data project dan 2.000 user penguji:
+#### 3. Jalankan CLI Data Seeder
+Buka terminal baru di folder `backend/` untuk mengisi 10.000 data permohonan dan 2.000 user:
 ```bash
 cd backend
 go run ./cmd/seed/main.go
 ```
-*Kredensial Akun Pengujian Default setelah Seeding:*
-- **Pemohon**: `pemohon1@kelayakan.id` s/d `pemohon1000@kelayakan.id` (Password: `password123`)
-- **Penilai**: `penilai1@kelayakan.id` s/d `penilai1000@kelayakan.id` (Password: `password123`)
 
-#### 4. Jalankan Frontend Vue 3
+#### 4. Menjalankan Frontend Vue 3
 Buka terminal pada folder `frontend/`:
 ```bash
 cd frontend
@@ -147,21 +171,46 @@ cd frontend
 # Install dependensi npm
 npm install
 
-# Jalankan server pengembangan Vite
+# Jalankan server development Vite
 npm run dev
 ```
-Akses aplikasi melalui browser: **`http://localhost:5173`**
+
+Akses aplikasi frontend melalui browser pada alamat: **`http://localhost:5173`**
 
 ---
 
-## 🔒 Keamanan & Prinsip Clean Code (Security & Best Practices)
+## 🔑 Akun Pengujian Default (Default Test Credentials)
 
-- **Password Hashing**: Menggunakan `golang.org/x/crypto/bcrypt` dengan default cost.
-- **Path Traversal Protection**: Nama file yang diunggah dikonversi ke UUID v4 unik di atas disk, dan direktori penyimpanan diisolasi dari root web server.
-- **SQL Injection Prevention**: Seluruh query menggunakan parametrisasi ORM GORM.
-- **Role-Based Access Control (RBAC)**: Endpoint backend dan rute frontend dilindungi middleware JWT sesuai perannya masing-masing.
+Setelah menjalankan perintah **Data Seeder** di atas, Anda dapat langsung login menggunakan salah satu akun default berikut (atau membuat akun baru via menu **Register**):
+
+| Role / Peran | Email | Password | Hak Akses |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@kelayakan.id` | `password123` | Akses Penuh Sistem & Management User |
+| **Pemohon Dokumen** | `pemohon1@kelayakan.id` | `password123` | Buat & Kelola Permohonan Dokumen |
+| **Pemohon Dokumen** | `pemohon2@kelayakan.id` | `password123` | Buat & Kelola Permohonan Dokumen |
+| **Penilai / Verifikator** | `penilai1@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
+| **Penilai / Verifikator** | `penilai2@kelayakan.id` | `password123` | Review, Disetujui, Revisi, Tolak Dokumen |
 
 ---
 
-## 📄 Lisensi & Hak Cipta
-Dikembangkan untuk keperluan **Technical Test Programmer - Sistem Pengajuan Dokumen Kelayakan**.
+## 🛡️ Aspek Keamanan & Standardisasi Kode
+
+- **Password Hashing**: Menggunakan `golang.org/x/crypto/bcrypt` dengan standar *cost factor*.
+- **Keamanan Unggah File (Path Traversal & Shell Upload Protection)**: File lampiran disimpan menggunakan penamaan acak **UUID v4**, serta dilakukan pembatasan ekstensi file (`.pdf`, `.png`, `.jpg`, `.docx`) dan batas ukuran maksimum 10MB.
+- **SQL Injection Prevention**: Seluruh akses database menggunakan query terparametrisasi via GORM ORM.
+- **JWT & Role-Based Access Control (RBAC)**: Endpoint API Backend dan Navigasi Frontend dilindungi oleh middleware JWT yang memverifikasi kecocokan peran (`pemohon` vs `penilai`).
+- **Auto Database Migration**: Skema tabel database diperbarui secara otomatis saat aplikasi diawali tanpa memerlukan eksekusi file SQL manual.
+
+---
+
+## ❓ Solusi Masalah Umum (Troubleshooting)
+
+1. **Gagal Koneksi Database (`connection refused`)**:
+   - Pastikan service PostgreSQL sudah berjalan di port `5432`.
+   - Pastikan informasi `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` di file `backend/.env` sudah sesuai dengan database Anda.
+
+2. **Gariskait Merah pada Import Go di VS Code**:
+   - Jika VS Code menampilkan garis merah pada baris import Go, buka Command Palette (`Ctrl+Shift+P`), lalu pilih **`Go: Restart Language Server`**.
+
+3. **Port 8080 atau 5173 Sudah Terpakai**:
+   - Anda dapat mengubah nilai `PORT` pada file `backend/.env` atau menyesuaikan `ports` pada file `docker-compose.yml`.

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -48,8 +47,8 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server running on http://127.0.0.1:%s\n", port)
-	if err := r.Run(fmt.Sprintf("127.0.0.1:%s", port)); err != nil {
+	log.Printf("Server running on port %s\n", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }
