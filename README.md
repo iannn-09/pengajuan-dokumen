@@ -32,9 +32,9 @@ Proyek ini dirancang untuk menangani ribuan hingga ratusan ribu data permohonan 
 
 ## 🛠️ Stack Teknologi & Dependensi
 
-- **Backend**: Go 1.25, Gin Framework, GORM v1.25.6, Golang-JWT v5, Bcrypt.
+- **Backend**: Go 1.25.3, Gin Web Framework, GORM v1.31.2, Golang-JWT v5, Bcrypt.
 - **Frontend**: Vue 3, Vite, Pinia (State Management), Vue Router, Chart.js, Axios.
-- **Database**: PostgreSQL 15 / 16.
+- **Database**: PostgreSQL 18.
 - **DevOps & Tooling**: Docker, Docker Compose, Air (Hot-Reloading Go).
 
 ---
