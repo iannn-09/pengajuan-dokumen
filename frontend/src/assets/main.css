@@ -298,8 +298,6 @@ body {
   background: #475569;
 }
 
-background: var(--bg-primary);
-}
 
 ::-webkit-scrollbar-thumb {
   background: #334155;
