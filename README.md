@@ -60,6 +60,14 @@ pengajuan-dokumen/
 │   ├── uploads/                # Direktori Penyimpanan Berkas Lampiran
 │   ├── .env.example            # Template Konfigurasi Environment Backend
 │   └── Dockerfile              # Dockerfile Multi-Stage Build Backend Go
+├── wa-bot/
+│   ├── main.go                 # Entry Point WhatsApp Bot API
+│   ├── routes.go               # Routing API Session & Message
+│   ├── controllers.go          # Handler Session, Send Message, Bulk Message
+│   ├── session_manager.go      # Manajemen sesi WhatsApp
+│   ├── types.go                # Tipe request JSON untuk API bot
+│   ├── Dockerfile              # Dockerfile service WhatsApp bot
+│   └── docker-compose.yml      # Compose terpisah untuk menjalankan WA bot
 └── frontend/
     ├── src/
     │   ├── assets/             # Global CSS & Design System
@@ -121,7 +129,7 @@ Jika Anda ingin menjalankan proyek secara lokal untuk kebutuhan pengujian atau p
   docker-compose up -d postgres
   ```
 
-#### 2. Konfigurasi & Jalankan Backend Go
+#### 2. Konfigurasi & Jalankan Backend Go dengan Air
 Buka terminal pada folder `backend/`:
 ```bash
 cd backend
@@ -133,7 +141,7 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Pastikan isi file `backend/.env` sesuai dengan konfigurasi PostgreSQL lokal Anda:
+Pastikan isi file `backend/.env` sesuai dengan konfigurasi PostgreSQL lokal Anda(untuk secret key sengaja saya beri agar tinggal memakai saja seharusnya itu tidak di tampilkan):
 ```env
 PORT=8080
 DB_HOST=localhost
@@ -158,13 +166,13 @@ WHATSAPP_BOT_SECRET=8f4d2a9c1b7e6f0a3d8c5e9b2f1a7c4d6e8f9a0b3c5d7e1f2a4b6c8d9e0f
 GEMINI_API_KEY=AQ.Ab8RN6IGG118QrDccf54sCengB-NHtGMRSu6zVUqFEpk2KeGuw
 ```
 
-Selanjutnya, install dependensi dan jalankan server backend:
+Selanjutnya, install dependensi dan jalankan server backend dengan Air:
 ```bash
 # Download dependensi Go
 go mod tidy
 
-# Jalankan server backend (Auto Migration akan berjalan otomatis)
-go run ./cmd/api/main.go
+# Jalankan server backend dengan Air (Auto Migration akan berjalan otomatis)
+air
 ```
 *(Backend akan berjalan di `http://localhost:8080`)*.
 
@@ -188,6 +196,49 @@ npm run dev
 ```
 
 Akses aplikasi frontend melalui browser pada alamat: **`http://localhost:5173`**
+
+#### 5. Menjalankan WhatsApp Bot dengan Air
+Service `wa-bot` berjalan terpisah dari backend utama dan dipakai untuk pengelolaan sesi WhatsApp, kirim pesan, serta bulk message. Service ini juga sudah disiapkan untuk dijalankan dengan Air melalui file [wa-bot/.air.toml](wa-bot/.air.toml).
+
+1. Buka terminal pada folder `wa-bot/`:
+   ```bash
+   cd wa-bot
+   ```
+
+2. Siapkan environment file `.env` di folder `wa-bot/` dengan minimal isi seperti berikut:
+   ```env
+   API_SECRET=8f4d2a9c1b7e6f0a3d8c5e9b2f1a7c4d6e8f9a0b3c5d7e1f2a4b6c8d9e0f1a3
+   WEBHOOK_URL=http://127.0.0.1:8000/api/whatsapp-webhook
+   ```
+
+3. Jalankan service bot dengan Air:
+   ```bash
+   air
+   ```
+
+4. Service akan tersedia di port `3000`.
+
+5. Buka endpoint status untuk memastikan bot hidup:
+   ```bash
+   curl http://localhost:3000/
+   ```
+
+6. Gunakan endpoint session dan message berikut sesuai kebutuhan:
+   - `POST /sessions` untuk membuat session baru dan menampilkan QR code.
+   - `GET /sessions` untuk melihat daftar session.
+   - `GET /sessions/{id}` untuk melihat detail session.
+   - `PATCH /sessions/{id}` untuk mengganti nama session.
+   - `POST /sessions/{id}/logout` untuk logout session.
+   - `DELETE /sessions/{id}` untuk menghapus session.
+   - `POST /send-message` untuk mengirim pesan satu penerima.
+   - `POST /send-bulk-same-message` untuk mengirim pesan yang sama ke banyak nomor.
+   - `POST /send-bulk-different-messages` untuk mengirim pesan berbeda ke banyak nomor.
+   - `GET /groups` untuk mengambil daftar grup WhatsApp yang tersedia.
+
+Catatan:
+- Semua request write pada API bot mengirim field `secret` yang harus sama dengan `API_SECRET`.
+- Session bot disimpan otomatis di folder `wa-bot/session/`.
+- Bila Anda memakai Docker, jalankan compose di folder `wa-bot/` secara terpisah karena service ini tidak ada di `docker-compose.yml` root.
 
 ---
 
