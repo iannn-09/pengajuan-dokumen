@@ -139,11 +139,23 @@ PORT=8080
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=postgrespassword
+DB_PASSWORD=postgres
 DB_NAME=dokumen
 DB_SSLMODE=disable
 CORS_ALLOW_ORIGIN=http://localhost:5173
-JWT_SECRET=super-secret-jwt-key-2026
+JWT_SECRET=rahasia-super-aman-pengajuan-dokumen-2026
+
+WHATSAPP_NOTIFIER_ENABLED=true
+WHATSAPP_API_URL=
+WHATSAPP_API_TOKEN=
+WHATSAPP_DEFAULT_COUNTRY_CODE=62
+WHATSAPP_DEFAULT_DELAY=0
+WHATSAPP_SENDER_NAME="${APP_NAME}"
+
+WHATSAPP_BOT_URL=http://127.0.0.1:5173
+WHATSAPP_BOT_SECRET=8f4d2a9c1b7e6f0a3d8c5e9b2f1a7c4d6e8f9a0b3c5d7e1f2a4b6c8d9e0f1a3
+
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 Selanjutnya, install dependensi dan jalankan server backend:
